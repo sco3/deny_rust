@@ -6,6 +6,6 @@ use crate::deny_list_plugin::DenyListPlugin;
 impl DenyListPlugin {
     #[new]
     fn new(config: DenyListConfig) -> Self {
-        Self { deny_words: config.words }
+        Self { deny_words: config.words.into_iter().collect() }
     }
 }
