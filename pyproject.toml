@@ -1,0 +1,9 @@
+[project]
+name = "deny-rust"
+version = "1.0.0-BETA-2"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "black>=26.1.0",
+]
