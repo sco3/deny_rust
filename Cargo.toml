@@ -2,10 +2,13 @@
 name = "deny_rust"
 version = "0.1.0"
 edition = "2024"
+license = "Apache-2.0"
 
 [lib]
 name = "deny_list_rs"
 crate-type = ["cdylib"]
 
 [dependencies]
+aho-corasick = "1.1.4"
 pyo3 = "0.28.0"
+tracing = "0.1.44"
