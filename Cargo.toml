@@ -1,0 +1,11 @@
+[package]
+name = "deny_rust"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "deny_list_rs"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = "0.28.0"
