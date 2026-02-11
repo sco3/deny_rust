@@ -3,13 +3,19 @@ name = "deny-rust"
 version = "1.0.0-BETA-2"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.14"
 dependencies = [
     "black>=26.1.0",
     "pip>=26.0.1",
+    #"deny_rust @ file://./target/wheels/deny_rust-1.0.0b2-cp312-cp312-linux_x86_64.whl",
 ]
 
 
 [build-system]
 requires = ["maturin>=1.0,<2.0"]
 build-backend = "maturin"
+
+[tool.maturin]
+# This tells maturin which features to use when uv builds it
+features = ["pyo3/extension-module"]
+module-name = "deny_rust"
