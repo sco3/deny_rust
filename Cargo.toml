@@ -5,7 +5,7 @@ edition = "2024"
 license = "Apache-2.0"
 
 [lib]
-name = "deny_list_rs"
+name = "deny_rust"
 crate-type = ["cdylib"]
 
 [dependencies]
