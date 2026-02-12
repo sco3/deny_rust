@@ -1,3 +1,6 @@
 /target
 .idea
+plugins
+**/__pycache__
+deny_check_results.json
 
