@@ -110,7 +110,7 @@ async def run_test_suite_py(config: dict[str, Any], count: int = 1) -> dict[str,
     print("=" * 80)
     warmup_start = time.time()
     warmup_count = 0
-    warmup_target = 3000
+    warmup_target = 13000
     
     while warmup_count < warmup_target:
         for deny_list in deny_word_lists:

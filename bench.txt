@@ -1,0 +1,136 @@
+================================================================================
+DENY FILTER PERFORMANCE TEST (Python Plugin Mode)
+================================================================================
+Deny word lists: 8
+Sample texts: 12
+Total combinations: 96
+Iterations per combination: 10000
+Total test runs: 960000
+================================================================================
+
+Creating plugin instances...
+Created 8 plugin instances
+
+================================================================================
+WARMUP PHASE - Running 3000 tests (not counted in benchmark)
+================================================================================
+Warmup progress: 500/3000 tests (16%)
+Warmup progress: 1000/3000 tests (33%)
+Warmup progress: 1500/3000 tests (50%)
+Warmup progress: 2000/3000 tests (66%)
+Warmup progress: 2500/3000 tests (83%)
+Warmup progress: 3000/3000 tests (100%)
+Warmup completed: 3000 tests in 0.01 seconds
+================================================================================
+
+Starting benchmark at: 2026-02-12 14:52:00
+
+Progress: 10/96 combinations tested (10%)
+Progress: 20/96 combinations tested (20%)
+Progress: 30/96 combinations tested (31%)
+Progress: 40/96 combinations tested (41%)
+Progress: 50/96 combinations tested (52%)
+Progress: 60/96 combinations tested (62%)
+Progress: 70/96 combinations tested (72%)
+Progress: 80/96 combinations tested (83%)
+Progress: 90/96 combinations tested (93%)
+Progress: 96/96 combinations tested (100%)
+
+Completed tests at: 2026-02-12 14:52:03
+Total wall time: 3.04 seconds
+
+================================================================================
+PERFORMANCE SUMMARY
+================================================================================
+Total tests run:        960000
+Wall clock time:        3.040252 seconds
+Pure execution time:    1.553034 seconds (sum of individual test times)
+Overhead time:          1.487218 seconds (48.9% - setup, plugin init, etc.)
+Average time per test:  1.62 μs
+Min time:               0.76 μs
+Max time:               35340.63 μs
+Tests blocked:          170000
+Tests passed:           790000
+Accuracy:               100.0%
+Correct predictions:    960000/960000
+
+================================================================================
+TOP 5 SLOWEST TESTS
+================================================================================
+1. basic_profanity + clean_text                       |  35340.63μs
+2. mixed_length + long_text                           |    534.48μs
+3. basic_profanity + clean_text                       |    517.31μs
+4. basic_profanity + short_text                       |    247.39μs
+5. security_keywords + case_variation                 |     87.37μs
+
+================================================================================
+Detailed results saved to: /home/dz/prj/deny_rust/deny_check_results.json
+================================================================================
+================================================================================
+DENY FILTER PERFORMANCE TEST (Rust Scan Mode)
+================================================================================
+Deny word lists: 8
+Sample texts: 12
+Total combinations: 96
+Iterations per combination: 10000
+Total test runs: 960000
+================================================================================
+
+Creating plugin instances...
+Created 8 plugin instances
+
+================================================================================
+WARMUP PHASE - Running 3000 tests (not counted in benchmark)
+================================================================================
+Warmup progress: 500/3000 tests (16%)
+Warmup progress: 1000/3000 tests (33%)
+Warmup progress: 1500/3000 tests (50%)
+Warmup progress: 2000/3000 tests (66%)
+Warmup progress: 2500/3000 tests (83%)
+Warmup progress: 3000/3000 tests (100%)
+Warmup completed: 3000 tests in 0.00 seconds
+================================================================================
+
+Starting benchmark at: 2026-02-12 14:52:12
+
+Progress: 10/96 combinations tested (10%)
+Progress: 20/96 combinations tested (20%)
+Progress: 30/96 combinations tested (31%)
+Progress: 40/96 combinations tested (41%)
+Progress: 50/96 combinations tested (52%)
+Progress: 60/96 combinations tested (62%)
+Progress: 70/96 combinations tested (72%)
+Progress: 80/96 combinations tested (83%)
+Progress: 90/96 combinations tested (93%)
+Progress: 96/96 combinations tested (100%)
+
+Completed tests at: 2026-02-12 14:52:13
+Total wall time: 0.74 seconds
+
+================================================================================
+PERFORMANCE SUMMARY
+================================================================================
+Total tests run:        960000
+Wall clock time:        0.742392 seconds
+Pure execution time:    0.254272 seconds (sum of individual test times)
+Overhead time:          0.488120 seconds (65.7% - setup, plugin init, etc.)
+Average time per test:  0.26 μs
+Min time:               0.11 μs
+Max time:               519.86 μs
+Tests blocked:          170000
+Tests passed:           790000
+Accuracy:               100.0%
+Correct predictions:    960000/960000
+
+================================================================================
+TOP 5 SLOWEST TESTS
+================================================================================
+1. case_sensitive + empty_text                        |    519.86μs
+2. large_list + case_variation                        |    239.48μs
+3. large_list + contains_ssn                          |    208.71μs
+4. case_sensitive + contains_asdf                     |    129.66μs
+5. special_chars + empty_text                         |    124.69μs
+
+================================================================================
+Detailed results saved to: /home/dz/prj/deny_rust/deny_check_results.json
+================================================================================
