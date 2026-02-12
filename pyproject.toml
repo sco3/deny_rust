@@ -20,3 +20,8 @@ build-backend = "maturin"
 # This tells maturin which features to use when uv builds it
 features = ["pyo3/extension-module"]
 module-name = "deny_rust"
+
+[dependency-groups]
+dev = [
+    "maturin>=1.11.5",
+]
