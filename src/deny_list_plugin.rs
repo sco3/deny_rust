@@ -13,9 +13,9 @@ pub struct DenyListPlugin {
 #[pymethods]
 impl DenyListPlugin {
     #[new]
-    fn new(config: DenyListConfig) -> Self {
-        let ac = AhoCorasick::new(config.words.into_iter()).unwrap();
-        Self { ac }
+    fn new(config: DenyListConfig) -> PyResult<Self> {
+        let ac = AhoCorasick::new(config.words.into_iter())?;
+        Ok(Self { ac })
     }
 
     pub fn scan(&self, args: &Bound<'_, PyDict>) -> PyResult<bool> {
