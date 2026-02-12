@@ -29,8 +29,7 @@ class PerformanceStats:
     def __init__(self) -> None:
         self.total_tests: int = 0
         self.total_time: float = 0.0
-        self.min_time: float = float("inf")
-        self.max_time: float = 0.0
+        self.execution_times: list[float] = []
         self.blocked_count: int = 0
         self.passed_count: int = 0
         self.results: list[TestResult] = []
@@ -41,8 +40,7 @@ class PerformanceStats:
         """Add a test result."""
         self.total_tests += 1
         self.total_time += execution_time
-        self.min_time = min(self.min_time, execution_time)
-        self.max_time = max(self.max_time, execution_time)
+        self.execution_times.append(execution_time)
 
         if blocked:
             self.blocked_count += 1
@@ -62,18 +60,35 @@ class PerformanceStats:
 
     def get_summary(self) -> dict[str, Any]:
         """Get summary statistics."""
-        avg_time = self.total_time / self.total_tests if self.total_tests > 0 else 0
         correct_count = sum(1 for r in self.results if r["correct"])
         accuracy = (
             (correct_count / self.total_tests * 100) if self.total_tests > 0 else 0
         )
 
+        # Calculate median and p99
+        median_time = 0.0
+        p99_time = 0.0
+        if self.execution_times:
+            sorted_times = sorted(self.execution_times)
+            n = len(sorted_times)
+            
+            # Median
+            if n % 2 == 0:
+                median_time = (sorted_times[n // 2 - 1] + sorted_times[n // 2]) / 2
+            else:
+                median_time = sorted_times[n // 2]
+            
+            # P99 (99th percentile)
+            p99_index = int(n * 0.99)
+            if p99_index >= n:
+                p99_index = n - 1
+            p99_time = sorted_times[p99_index]
+
         return {
             "total_tests": self.total_tests,
             "total_time_seconds": self.total_time,
-            "average_time_us": avg_time * 1_000_000,
-            "min_time_us": self.min_time * 1_000_000 if self.min_time != float("inf") else 0,
-            "max_time_us": self.max_time * 1_000_000,
+            "median_time_us": median_time * 1_000_000,
+            "p99_time_us": p99_time * 1_000_000,
             "blocked_count": self.blocked_count,
             "passed_count": self.passed_count,
             "accuracy_percent": accuracy,
@@ -109,23 +124,14 @@ def print_results(result_data: dict[str, Any]) -> None:
     print(
         f"Overhead time:          {overhead:.6f} seconds ({overhead_percent:.1f}% - setup, plugin init, etc.)"
     )
-    print(f"Average time per test:  {summary['average_time_us']:.2f} μs")
-    print(f"Min time:               {summary['min_time_us']:.2f} μs")
-    print(f"Max time:               {summary['max_time_us']:.2f} μs")
+    print(f"Median time per test:   {summary['median_time_us']:.2f} μs")
+    print(f"P99 time:               {summary['p99_time_us']:.2f} μs")
     print(f"Tests blocked:          {summary['blocked_count']}")
     print(f"Tests passed:           {summary['passed_count']}")
     print(f"Accuracy:               {summary['accuracy_percent']:.1f}%")
     print(
         f"Correct predictions:    {summary['correct_predictions']}/{summary['total_tests']}"
     )
-
-    # Find slowest tests
-    print("\n" + "=" * 80)
-    print("TOP 5 SLOWEST TESTS")
-    print("=" * 80)
-    sorted_results = sorted(results, key=lambda x: x["execution_time_us"], reverse=True)
-    for i, result in enumerate(sorted_results[:5], 1):
-        print(f"{i}. {result['test_name']:50s} | {result['execution_time_us']:9.2f}μs")
 
     # Count mismatches
     mismatches = [r for r in results if not r["correct"]]
