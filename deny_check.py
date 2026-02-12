@@ -203,6 +203,7 @@ def main() -> None:
         run_test_suite_rs_mode(count=args.count)
     else:
         print(f"Error: Unknown mode '{args.mode}'. Use 'py' or 'rs'.")
+        return
 
 
 if __name__ == "__main__":
