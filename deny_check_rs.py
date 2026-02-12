@@ -15,7 +15,7 @@ def run_test_combination_rs(
     sample_text: str,
     expected_block: bool,
 ) -> tuple[str, float, bool]:
-    """Run a single test combination using Rust scan method.
+    """Run a single test combination using Rust prompt_pre_fetch method.
 
     Args:
         deny_list_name: Name of the deny list being tested
@@ -31,16 +31,15 @@ def run_test_combination_rs(
     config = deny_rust.DenyListConfig(words=deny_words)
     deny_list = deny_rust.DenyListPlugin(config=config)
 
-    # Use scan method - it scans all values in the dictionary
-    # Pass the text directly as a single value to scan
+    # Use prompt_pre_fetch method - matches Python plugin approach
+    # Pass the text as args dictionary
     start_time = time.perf_counter()
-    result = deny_list.scan({"content": sample_text})
+    result = deny_list.prompt_pre_fetch({"text": sample_text})
     elapsed_time = time.perf_counter() - start_time
 
     # Check if blocked
-    # Note: Rust scan returns False when match found (blocked), True when no match (passed)
-    # So we need to invert: blocked = not result
-    was_blocked = not result
+    # Result has a violation field - if not None, text was blocked
+    was_blocked = result.violation is not None
 
     test_name = f"{deny_list_name} + {sample_name}"
     return test_name, elapsed_time, was_blocked
