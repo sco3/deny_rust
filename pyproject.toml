@@ -5,10 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "black>=26.1.0",
     "mcp-contextforge-gateway>=0.9.0",
-    "pip>=26.0.1",
-    "pytest>=9.0.2",
 ]
 
 
@@ -23,5 +20,7 @@ module-name = "deny_rust"
 
 [dependency-groups]
 dev = [
+    "black>=26.1.0",
     "maturin>=1.11.5",
+    "scalene>=2.1.3",
 ]

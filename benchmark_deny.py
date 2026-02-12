@@ -306,4 +306,4 @@ if __name__ == "__main__":
     
     
     asyncio.run(main(warmup_runs=args.warmup, benchmark_runs=args.runs,plugin_type=DenyListPlugin))
-    #asyncio.run(main(warmup_runs=args.warmup, benchmark_runs=args.runs,plugin_type=DenyListPluginRust))
+    asyncio.run(main(warmup_runs=args.warmup, benchmark_runs=args.runs,plugin_type=DenyListPluginRust))

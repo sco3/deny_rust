@@ -2,4 +2,5 @@
 .idea
 **/__pycache__
 deny_check_results.json
+scalene*
 

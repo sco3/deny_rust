@@ -23,7 +23,7 @@
     {
       "name": "large_list",
       "words": ["word1", "word2", "word3", "word4", "word5", "word6", "word7", "word8", "word9", "word10",
-                "word11", "word12", "word13", "word14", "word15", "word16", "word17", "word18", "word19", "word20"]
+        "word11", "word12", "word13", "word14", "word15", "word16", "word17", "word18", "word19", "word20"]
     },
     {
       "name": "special_chars",
@@ -77,7 +77,7 @@
     },
     {
       "name": "long_text",
-      "text": "This is a very long text that contains multiple sentences and paragraphs. It goes on and on with various content. Somewhere in here there might be a word1 that triggers the filter. The text continues with more information and details about various topics.",
+      "text": "      Former Norwegian Prime Minister Thorbjørn Jagland has been charged with gross corruption over his ties with the US sex offender Jeffrey Epstein, police have said.     The charge was brought after the Council of Europe lifted Jagland's immunity, which he enjoyed because of his past diplomatic role. He denies criminal liability and is willing to cooperate, his lawyer says.      Emails released by the US government are thought to show that Jagland planned solo and family visits to Epstein's homes in Paris, New York and Palm Beach after the billionaire was convicted of a child sex offence.      Three of Jagland's properties were searched by Norwegian crime unit Økokrim and he is now expected to be questioned.      As well as serving as prime minister from 1996 to 1997, Jagland is also a former head of the Norwegian Nobel Committee and spent a decade as secretary general of the Council of Europe.      Jagland had diplomatic immunity from heading the Council, Europe's watchdog for democracy and human rights, for alleged acts carried out during his 2009 to 2019 tenure. This is a very long text that contains multiple sentences and paragraphs. It goes on and on with various content. Somewhere in here there might be a word1 that triggers the filter. The text continues with more information and details about various topics.",
       "should_block": true
     },
     {

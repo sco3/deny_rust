@@ -71,7 +71,7 @@ def create_plugin_instances(config: Dict[str, Any], plugin_type: Type[Plugin]) -
     return plugins
 
 
-async def main(plugin_type: Type[Plugin] = DenyListPluginRust):
+async def main(plugin_type: Type[Plugin] = DenyListPlugin):
     """Main benchmark function.
     
     Args:
