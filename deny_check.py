@@ -35,7 +35,9 @@ class PerformanceStats:
         self.passed_count: int = 0
         self.results: list[TestResult] = []
 
-    def add_result(self, test_name: str, execution_time: float, blocked: bool, expected_block: bool) -> None:
+    def add_result(
+        self, test_name: str, execution_time: float, blocked: bool, expected_block: bool
+    ) -> None:
         """Add a test result."""
         self.total_tests += 1
         self.total_time += execution_time
@@ -62,7 +64,9 @@ class PerformanceStats:
         """Get summary statistics."""
         avg_time = self.total_time / self.total_tests if self.total_tests > 0 else 0
         correct_count = sum(1 for r in self.results if r["correct"])
-        accuracy = (correct_count / self.total_tests * 100) if self.total_tests > 0 else 0
+        accuracy = (
+            (correct_count / self.total_tests * 100) if self.total_tests > 0 else 0
+        )
 
         return {
             "total_tests": self.total_tests,
@@ -79,31 +83,41 @@ class PerformanceStats:
 
 def print_results(result_data: dict[str, Any]) -> None:
     """Print test results in a formatted way.
+
     Args:
         result_data (dict[str, Any]): Dictionary containing summary, detailed_results, and timing info.
+    """
     summary = result_data["summary"]
     results = result_data["detailed_results"]
     wall_time_elapsed = result_data["wall_time"]
-    
+
     # Print summary
     print("\n" + "=" * 80)
     print("PERFORMANCE SUMMARY")
     print("=" * 80)
 
-    overhead = wall_time_elapsed - summary['total_time_seconds']
-    overhead_percent = (overhead / wall_time_elapsed * 100) if wall_time_elapsed > 0 else 0
-    
+    overhead = wall_time_elapsed - summary["total_time_seconds"]
+    overhead_percent = (
+        (overhead / wall_time_elapsed * 100) if wall_time_elapsed > 0 else 0
+    )
+
     print(f"Total tests run:        {summary['total_tests']}")
     print(f"Wall clock time:        {wall_time_elapsed:.6f} seconds")
-    print(f"Pure execution time:    {summary['total_time_seconds']:.6f} seconds (sum of individual test times)")
-    print(f"Overhead time:          {overhead:.6f} seconds ({overhead_percent:.1f}% - setup, plugin init, etc.)")
+    print(
+        f"Pure execution time:    {summary['total_time_seconds']:.6f} seconds (sum of individual test times)"
+    )
+    print(
+        f"Overhead time:          {overhead:.6f} seconds ({overhead_percent:.1f}% - setup, plugin init, etc.)"
+    )
     print(f"Average time per test:  {summary['average_time_ms']:.3f} ms")
     print(f"Min time:               {summary['min_time_ms']:.3f} ms")
     print(f"Max time:               {summary['max_time_ms']:.3f} ms")
     print(f"Tests blocked:          {summary['blocked_count']}")
     print(f"Tests passed:           {summary['passed_count']}")
     print(f"Accuracy:               {summary['accuracy_percent']:.1f}%")
-    print(f"Correct predictions:    {summary['correct_predictions']}/{summary['total_tests']}")
+    print(
+        f"Correct predictions:    {summary['correct_predictions']}/{summary['total_tests']}"
+    )
 
     # Find slowest tests
     print("\n" + "=" * 80)
@@ -119,11 +133,15 @@ def print_results(result_data: dict[str, Any]) -> None:
         print("\n" + "=" * 80)
         print("MISMATCHES (Unexpected Results)")
         print("=" * 80)
-        
+
         # Count by type
-        false_positives = sum(1 for r in mismatches if r["blocked"] and not r["expected_block"])
-        false_negatives = sum(1 for r in mismatches if not r["blocked"] and r["expected_block"])
-        
+        false_positives = sum(
+            1 for r in mismatches if r["blocked"] and not r["expected_block"]
+        )
+        false_negatives = sum(
+            1 for r in mismatches if not r["blocked"] and r["expected_block"]
+        )
+
         print(f"Total mismatches:       {len(mismatches)}")
         print(f"False positives:        {false_positives} (blocked when should pass)")
         print(f"False negatives:        {false_negatives} (passed when should block)")
@@ -153,7 +171,7 @@ async def run_test_suite_py_mode(count: int = 1) -> None:
     config_path = Path(__file__).parent / "deny_check_config.json"
     with open(config_path, "r") as f:
         config = json.load(f)
-    
+
     result_data = await run_test_suite_py(config, count)
     print_results(result_data)
 
@@ -170,14 +188,16 @@ def run_test_suite_rs_mode(count: int = 1) -> None:
     config_path = Path(__file__).parent / "deny_check_config.json"
     with open(config_path, "r") as f:
         config = json.load(f)
-    
+
     result_data = run_test_suite_rs(config, count)
     print_results(result_data)
 
 
 def main() -> None:
     """Parse arguments and run tests."""
-    parser = argparse.ArgumentParser(description="Test deny filter performance with configurable iterations and modes")
+    parser = argparse.ArgumentParser(
+        description="Test deny filter performance with configurable iterations and modes"
+    )
     parser.add_argument(
         "--count",
         type=int,

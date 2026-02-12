@@ -72,6 +72,47 @@ def run_test_suite_rs(config: dict[str, Any], count: int = 1) -> dict[str, Any]:
     print("=" * 80)
     print()
 
+    # Warmup phase - 3000 tests
+    print("=" * 80)
+    print("WARMUP PHASE - Running 3000 tests (not counted in benchmark)")
+    print("=" * 80)
+    warmup_start = time.time()
+    warmup_count = 0
+    warmup_target = 3000
+    
+    while warmup_count < warmup_target:
+        for deny_list in deny_word_lists:
+            deny_list_name = deny_list["name"]
+            deny_words = deny_list["words"]
+
+            for sample in sample_texts:
+                if warmup_count >= warmup_target:
+                    break
+                    
+                sample_name = sample["name"]
+                sample_text = sample["text"]
+                should_block_for_this_list = any(word in sample_text for word in deny_words)
+
+                run_test_combination_rs(
+                    deny_list_name,
+                    deny_words,
+                    sample_name,
+                    sample_text,
+                    should_block_for_this_list,
+                )
+                warmup_count += 1
+                
+                if warmup_count % 500 == 0:
+                    print(f"Warmup progress: {warmup_count}/{warmup_target} tests ({warmup_count*100//warmup_target}%)")
+            
+            if warmup_count >= warmup_target:
+                break
+    
+    warmup_elapsed = time.time() - warmup_start
+    print(f"Warmup completed: {warmup_count} tests in {warmup_elapsed:.2f} seconds")
+    print("=" * 80)
+    print()
+
     stats = PerformanceStats()
 
     # Run all combinations
@@ -81,7 +122,7 @@ def run_test_suite_rs(config: dict[str, Any], count: int = 1) -> dict[str, Any]:
     # Print wall time before starting tests
     start_wall_time = time.time()
     print(
-        f"Starting tests at: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start_wall_time))}"
+        f"Starting benchmark at: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start_wall_time))}"
     )
     print()
 
