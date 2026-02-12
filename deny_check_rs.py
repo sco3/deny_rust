@@ -10,16 +10,16 @@ import deny_rust
 
 def run_test_combination_rs(
     deny_list_name: str,
-    deny_words: list[str],
+    deny_list_plugin: deny_rust.DenyListPlugin,
     sample_name: str,
     sample_text: str,
     expected_block: bool,
 ) -> tuple[str, float, bool]:
-    """Run a single test combination using Rust scan method.
+    """Run a single test combination using Rust prompt_pre_fetch method.
 
     Args:
         deny_list_name: Name of the deny list being tested
-        deny_words: List of words to deny
+        deny_list_plugin: Pre-initialized DenyListPlugin instance
         sample_name: Name of the sample text
         sample_text: The text to test
         expected_block: Whether this text should be blocked
@@ -27,20 +27,15 @@ def run_test_combination_rs(
     Returns:
         Tuple of (test_name, execution_time, was_blocked)
     """
-    # Create Rust-based deny list configuration and plugin
-    config = deny_rust.DenyListConfig(words=deny_words)
-    deny_list = deny_rust.DenyListPlugin(config=config)
-
-    # Use scan method - it scans all values in the dictionary
-    # Pass the text directly as a single value to scan
+    # Use prompt_pre_fetch method - matches Python plugin approach
+    # Pass the text as args dictionary
     start_time = time.perf_counter()
-    result = deny_list.scan({"content": sample_text})
+    result = deny_list_plugin.prompt_pre_fetch({"text": sample_text})
     elapsed_time = time.perf_counter() - start_time
 
     # Check if blocked
-    # Note: Rust scan returns False when match found (blocked), True when no match (passed)
-    # So we need to invert: blocked = not result
-    was_blocked = not result
+    # Result has a violation field - if not None, text was blocked
+    was_blocked = result.violation is not None
 
     test_name = f"{deny_list_name} + {sample_name}"
     return test_name, elapsed_time, was_blocked
@@ -72,6 +67,17 @@ def run_test_suite_rs(config: dict[str, Any], count: int = 1) -> dict[str, Any]:
     print("=" * 80)
     print()
 
+    # Create plugin instances once for each deny list (outside the test loops)
+    print("Creating plugin instances...")
+    deny_list_plugins = {}
+    for deny_list in deny_word_lists:
+        deny_list_name = deny_list["name"]
+        deny_words = deny_list["words"]
+        config = deny_rust.DenyListConfig(words=deny_words)
+        deny_list_plugins[deny_list_name] = deny_rust.DenyListPlugin(config=config)
+    print(f"Created {len(deny_list_plugins)} plugin instances")
+    print()
+
     # Warmup phase - 3000 tests
     print("=" * 80)
     print("WARMUP PHASE - Running 3000 tests (not counted in benchmark)")
@@ -84,6 +90,7 @@ def run_test_suite_rs(config: dict[str, Any], count: int = 1) -> dict[str, Any]:
         for deny_list in deny_word_lists:
             deny_list_name = deny_list["name"]
             deny_words = deny_list["words"]
+            deny_list_plugin = deny_list_plugins[deny_list_name]
 
             for sample in sample_texts:
                 if warmup_count >= warmup_target:
@@ -95,7 +102,7 @@ def run_test_suite_rs(config: dict[str, Any], count: int = 1) -> dict[str, Any]:
 
                 run_test_combination_rs(
                     deny_list_name,
-                    deny_words,
+                    deny_list_plugin,
                     sample_name,
                     sample_text,
                     should_block_for_this_list,
@@ -129,6 +136,7 @@ def run_test_suite_rs(config: dict[str, Any], count: int = 1) -> dict[str, Any]:
     for deny_list in deny_word_lists:
         deny_list_name = deny_list["name"]
         deny_words = deny_list["words"]
+        deny_list_plugin = deny_list_plugins[deny_list_name]
 
         for sample in sample_texts:
             sample_name = sample["name"]
@@ -142,7 +150,7 @@ def run_test_suite_rs(config: dict[str, Any], count: int = 1) -> dict[str, Any]:
             for _ in range(count):
                 test_name, elapsed_time, was_blocked = run_test_combination_rs(
                     deny_list_name,
-                    deny_words,
+                    deny_list_plugin,
                     sample_name,
                     sample_text,
                     should_block_for_this_list,

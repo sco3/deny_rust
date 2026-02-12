@@ -17,7 +17,7 @@ class TestResult(TypedDict):
     """Type definition for test result."""
 
     test_name: str
-    execution_time_ms: float
+    execution_time_us: float
     blocked: bool
     expected_block: bool
     correct: bool
@@ -53,7 +53,7 @@ class PerformanceStats:
         self.results.append(
             {
                 "test_name": test_name,
-                "execution_time_ms": execution_time * 1000,
+                "execution_time_us": execution_time * 1_000_000,
                 "blocked": blocked,
                 "expected_block": expected_block,
                 "correct": correct,
@@ -71,9 +71,9 @@ class PerformanceStats:
         return {
             "total_tests": self.total_tests,
             "total_time_seconds": self.total_time,
-            "average_time_ms": avg_time * 1000,
-            "min_time_ms": self.min_time * 1000 if self.min_time != float("inf") else 0,
-            "max_time_ms": self.max_time * 1000,
+            "average_time_us": avg_time * 1_000_000,
+            "min_time_us": self.min_time * 1_000_000 if self.min_time != float("inf") else 0,
+            "max_time_us": self.max_time * 1_000_000,
             "blocked_count": self.blocked_count,
             "passed_count": self.passed_count,
             "accuracy_percent": accuracy,
@@ -109,9 +109,9 @@ def print_results(result_data: dict[str, Any]) -> None:
     print(
         f"Overhead time:          {overhead:.6f} seconds ({overhead_percent:.1f}% - setup, plugin init, etc.)"
     )
-    print(f"Average time per test:  {summary['average_time_ms']:.3f} ms")
-    print(f"Min time:               {summary['min_time_ms']:.3f} ms")
-    print(f"Max time:               {summary['max_time_ms']:.3f} ms")
+    print(f"Average time per test:  {summary['average_time_us']:.2f} μs")
+    print(f"Min time:               {summary['min_time_us']:.2f} μs")
+    print(f"Max time:               {summary['max_time_us']:.2f} μs")
     print(f"Tests blocked:          {summary['blocked_count']}")
     print(f"Tests passed:           {summary['passed_count']}")
     print(f"Accuracy:               {summary['accuracy_percent']:.1f}%")
@@ -123,9 +123,9 @@ def print_results(result_data: dict[str, Any]) -> None:
     print("\n" + "=" * 80)
     print("TOP 5 SLOWEST TESTS")
     print("=" * 80)
-    sorted_results = sorted(results, key=lambda x: x["execution_time_ms"], reverse=True)
+    sorted_results = sorted(results, key=lambda x: x["execution_time_us"], reverse=True)
     for i, result in enumerate(sorted_results[:5], 1):
-        print(f"{i}. {result['test_name']:50s} | {result['execution_time_ms']:7.3f}ms")
+        print(f"{i}. {result['test_name']:50s} | {result['execution_time_us']:9.2f}μs")
 
     # Count mismatches
     mismatches = [r for r in results if not r["correct"]]

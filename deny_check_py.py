@@ -25,35 +25,25 @@ logging.getLogger("mcpgateway").setLevel(logging.ERROR)
 
 async def run_test_combination(
     deny_list_name: str,
-    deny_words: list[str],
+    plugin: DenyListPlugin,
     sample_name: str,
     sample_text: str,
     expected_block: bool,
-    gctx: GlobalContext,
+    ctx: PluginContext,
 ) -> tuple[str, float, bool]:
     """Run a single test combination using plugin prehook.
 
     Args:
         deny_list_name: Name of the deny list being tested
-        deny_words: List of words to deny
+        plugin: Pre-initialized DenyListPlugin instance
         sample_name: Name of the sample text
         sample_text: The text to test
         expected_block: Whether this text should be blocked
-        gctx: Global context for the plugin
+        ctx: Plugin context for the plugin
 
     Returns:
         Tuple of (test_name, execution_time, was_blocked)
     """
-    plugin_cfg = PluginConfig(
-        name=f"deny_test_{deny_list_name}",
-        kind="plugins.deny_filter.deny.DenyListPlugin",
-        hooks=[PromptHookType.PROMPT_PRE_FETCH],
-        priority=100,
-        config={"words": deny_words},
-    )
-    ctx = PluginContext(global_context=gctx)
-    plugin = DenyListPlugin(config=plugin_cfg)
-
     payload = PromptPrehookPayload(
         prompt_id=f"test-{deny_list_name}-{sample_name}", args={"text": sample_text}
     )
@@ -95,6 +85,24 @@ async def run_test_suite_py(config: dict[str, Any], count: int = 1) -> dict[str,
     print()
 
     gctx = GlobalContext(request_id="deny-test-batch")
+    ctx = PluginContext(global_context=gctx)
+    
+    # Create plugin instances once for each deny list (outside the test loops)
+    print("Creating plugin instances...")
+    deny_list_plugins = {}
+    for deny_list in deny_word_lists:
+        deny_list_name = deny_list["name"]
+        deny_words = deny_list["words"]
+        plugin_cfg = PluginConfig(
+            name=f"deny_test_{deny_list_name}",
+            kind="plugins.deny_filter.deny.DenyListPlugin",
+            hooks=[PromptHookType.PROMPT_PRE_FETCH],
+            priority=100,
+            config={"words": deny_words},
+        )
+        deny_list_plugins[deny_list_name] = DenyListPlugin(config=plugin_cfg)
+    print(f"Created {len(deny_list_plugins)} plugin instances")
+    print()
     
     # Warmup phase - 3000 tests
     print("=" * 80)
@@ -108,6 +116,7 @@ async def run_test_suite_py(config: dict[str, Any], count: int = 1) -> dict[str,
         for deny_list in deny_word_lists:
             deny_list_name = deny_list["name"]
             deny_words = deny_list["words"]
+            plugin = deny_list_plugins[deny_list_name]
 
             for sample in sample_texts:
                 if warmup_count >= warmup_target:
@@ -119,11 +128,11 @@ async def run_test_suite_py(config: dict[str, Any], count: int = 1) -> dict[str,
 
                 await run_test_combination(
                     deny_list_name,
-                    deny_words,
+                    plugin,
                     sample_name,
                     sample_text,
                     should_block_for_this_list,
-                    gctx,
+                    ctx,
                 )
                 warmup_count += 1
                 
@@ -154,6 +163,7 @@ async def run_test_suite_py(config: dict[str, Any], count: int = 1) -> dict[str,
     for deny_list in deny_word_lists:
         deny_list_name = deny_list["name"]
         deny_words = deny_list["words"]
+        plugin = deny_list_plugins[deny_list_name]
 
         for sample in sample_texts:
             sample_name = sample["name"]
@@ -167,11 +177,11 @@ async def run_test_suite_py(config: dict[str, Any], count: int = 1) -> dict[str,
             for _ in range(count):
                 test_name, elapsed_time, was_blocked = await run_test_combination(
                     deny_list_name,
-                    deny_words,
+                    plugin,
                     sample_name,
                     sample_text,
                     should_block_for_this_list,
-                    gctx,
+                    ctx,
                 )
 
                 stats.add_result(
