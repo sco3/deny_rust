@@ -79,10 +79,8 @@ class PerformanceStats:
 
 def print_results(result_data: dict[str, Any]) -> None:
     """Print test results in a formatted way.
-    
     Args:
-        result_data: Dictionary containing summary, detailed_results, and timing info
-    """
+        result_data (dict[str, Any]): Dictionary containing summary, detailed_results, and timing info.
     summary = result_data["summary"]
     results = result_data["detailed_results"]
     wall_time_elapsed = result_data["wall_time"]
