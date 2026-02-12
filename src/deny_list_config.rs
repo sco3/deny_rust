@@ -6,7 +6,6 @@ pub struct DenyListConfig {
     pub words: Vec<String>,
 }
 
-
 #[pymethods]
 impl DenyListConfig {
     #[new]

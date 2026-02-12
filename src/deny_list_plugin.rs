@@ -1,5 +1,6 @@
 use crate::deny_list_config::DenyListConfig;
 use aho_corasick::AhoCorasick;
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::pyclass;
 use pyo3::types::{PyDict, PyDictMethods};
@@ -14,7 +15,8 @@ pub struct DenyListPlugin {
 impl DenyListPlugin {
     #[new]
     fn new(config: DenyListConfig) -> PyResult<Self> {
-        let ac = AhoCorasick::new(config.words.into_iter())?;
+        let ac = AhoCorasick::new(config.words)
+            .map_err(|e| PyValueError::new_err(format!("Invalid patterns: {}", e)))?;
         Ok(Self { ac })
     }
 
