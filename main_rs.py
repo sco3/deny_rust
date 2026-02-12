@@ -1,5 +1,6 @@
 import deny_rust
 import time
+from plugins.deny_filter.deny import DenyListPluginRust
 
 
 
@@ -17,6 +18,16 @@ def main():
     elapsed4 = time.perf_counter() - start
     print(f"test scan str: {result4} (took {elapsed4:.6f}s)")
 
+
+    start = time.perf_counter()
+    result1 = deny_list.scan({"path": "ok danger"})
+    elapsed1 = time.perf_counter() - start
+    print(f"test deny_list : {result1} (took {elapsed1:.6f}s)")
+
+    start = time.perf_counter()
+    result2 = deny_list.scan({"asdf": "        ok"})
+    elapsed2 = time.perf_counter() - start
+    print(f"test deny_list : {result2} (took {elapsed2:.6f}s)")
 
     start = time.perf_counter()
     result1 = deny_list.scan({"path": "ok danger"})
