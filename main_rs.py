@@ -1,7 +1,6 @@
 import deny_rust
 import time
 
-import plugins.deny_filter.DenyListPlugin
 
 
 def main():
