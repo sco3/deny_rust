@@ -94,7 +94,7 @@ impl DenyListPlugin {
 
     fn prompt_pre_fetch(&self, args: &Bound<'_, PyDict>) -> PyResult<Py<PluginResult>> {
         let py = args.py();
-        
+
         for value in args.values() {
             let value_str = value.extract::<&str>()?;
 
@@ -144,12 +144,12 @@ impl DenyListPlugin {
     // Keep the old scan method for backward compatibility
     pub fn scan(&self, args: &Bound<'_, PyDict>) -> PyResult<bool> {
         for value in args.values() {
-            let value_str = value.extract::<&str>()?;
-
-            if self.ac.is_match(value_str) {
-                return Ok(false);
+            if let Ok(value_str) = value.extract::<&str>() {
+                if self.ac.is_match(value_str) {
+                    return Ok(true);
+                }
             }
         }
-        Ok(true)
+        Ok(false)
     }
 }
