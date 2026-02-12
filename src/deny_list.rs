@@ -19,7 +19,7 @@ impl DenyList {
         Ok(Self { ac })
     }
 
-    /// scans text and return true if match found
+    /// scans dict and returns true if match found
     pub fn scan(&self, args: &Bound<'_, PyDict>) -> bool {
         for value in args.values() {
             if let Ok(value_str) = value.extract::<&str>() {
@@ -27,6 +27,14 @@ impl DenyList {
                     return true;
                 }
             }
+        }
+        false
+    }
+
+    /// scans str and returns true if match found
+    pub fn scan_str(&self, txt: &str) -> bool {
+        if self.ac.is_match(txt) {
+            return true;
         }
         false
     }
