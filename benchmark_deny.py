@@ -13,7 +13,7 @@ import sys
 import time
 import statistics
 from pathlib import Path
-from typing import List, Dict, Any, Type
+from typing import List, Dict, Any, Tuple, Type
 
 # Add parent directory to path to import plugins
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -24,8 +24,13 @@ from mcpgateway.plugins.framework import PluginConfig, Plugin, PluginContext
 from mcpgateway.plugins.framework.hooks.prompts import PromptHookType, PromptPrehookPayload
 from mcpgateway.plugins.framework.models import GlobalContext
 
+# JSON file name constants
 
-def load_config(config_path: str = "deny_check_config.json") -> Dict[str, Any]:
+CONFIG_FILE = "tests/data/deny_check_config_200.json"
+RESULTS_FILE = "deny_check_results.json"
+
+
+def load_config(config_path: str = CONFIG_FILE) -> Dict[str, Any]:
     """Load the deny check configuration from JSON file.
     
     Args:
@@ -43,7 +48,7 @@ def load_config(config_path: str = "deny_check_config.json") -> Dict[str, Any]:
         return json.load(f)
 
 
-def create_plugin_instances(config: Dict[str, Any], plugin_type: Type[Plugin]) -> List[Plugin]:
+def create_plugin_instances(config: Dict[str, Any], plugin_type: Type[Plugin]) -> List[Tuple[str,Plugin]]:
     """Create DenyListPlugin instances for each deny word list.
     
     Args:
@@ -74,6 +79,15 @@ def create_plugin_instances(config: Dict[str, Any], plugin_type: Type[Plugin]) -
         #print(f"Created plugin for '{deny_list['name']}' with {len(deny_list['words'])} words")
     
     return plugins
+
+
+async def test_py (plugin,payload,ctx):
+    return await plugin.prompt_pre_fetch(payload, ctx)
+
+
+async def test_rs (plugin,payload,ctx):
+    return await plugin.prompt_pre_fetch(payload, ctx)
+
 
 
 async def benchmark_prompt_pre_fetch(
@@ -111,7 +125,7 @@ async def benchmark_prompt_pre_fetch(
     
     for plugin_name, plugin in plugins:
         # Get the deny words for this specific plugin
-        plugin_deny_words = None
+        plugin_deny_words: list[str] = []
         for deny_list in config['deny_word_lists']:
             if deny_list['name'] == plugin_name:
                 plugin_deny_words = deny_list['words']
@@ -134,7 +148,12 @@ async def benchmark_prompt_pre_fetch(
             # Warmup runs
             #print(f"  Warmup ({warmup_runs} runs)...", end=" ", flush=True)
             for _ in range(warmup_runs):
-                await plugin.prompt_pre_fetch(payload, ctx)
+                if isinstance(plugin,DenyListPlugin):
+                    await test_py (plugin,payload,ctx)
+                else:
+                    await test_rs (plugin,payload,ctx)
+                #await plugin.prompt_pre_fetch(payload, ctx)
+                
             #print("Done")
             
             # Benchmark runs
@@ -144,7 +163,11 @@ async def benchmark_prompt_pre_fetch(
             
             for i in range(benchmark_runs):
                 start = time.perf_counter()
-                result = await plugin.prompt_pre_fetch(payload, ctx)
+                
+                if isinstance(plugin, DenyListPlugin):
+                    result = await test_py(plugin, payload, ctx)
+                else:
+                    result = await test_rs(plugin, payload, ctx)
                 elapsed = time.perf_counter() - start
                 timings_us.append(elapsed * 1_000_000)  # Convert to microseconds
                 
@@ -320,7 +343,7 @@ async def run_benchmark(plugin_type: Type[Plugin],
 
 async def main(warmup_runs: int = 5,
                benchmark_runs: int = 100,
-               config_path: str = "deny_check_config.json"):
+               config_path: str = CONFIG_FILE):
     """Main benchmark function that compares Python and Rust implementations.
     
     Args:
@@ -364,7 +387,7 @@ async def main(warmup_runs: int = 5,
         }
     }
     
-    output_file = "deny_check_results.json"
+    output_file = RESULTS_FILE
     with open(output_file, 'w') as f:
         json.dump(output_data, f, indent=2)
     print(f"\nDetailed results saved to: {output_file}")
@@ -377,7 +400,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Benchmark deny_check prompt_pre_fetch')
     parser.add_argument('--warmup', type=int, default=3000, help='Number of warmup runs (default: 5)')
     parser.add_argument('--runs', type=int, default=30000, help='Number of benchmark runs (default: 100)')
-    parser.add_argument('--data', type=str, default='deny_check_config.json', help='JSON config file name (default: deny_check_config.json)')
+    parser.add_argument('--data', type=str, default=CONFIG_FILE, help='JSON config file name (default: deny_check_config.json)')
     
     args = parser.parse_args()
     

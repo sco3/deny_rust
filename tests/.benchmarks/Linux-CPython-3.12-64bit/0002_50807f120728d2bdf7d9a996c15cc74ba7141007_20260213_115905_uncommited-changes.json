@@ -1,0 +1,1039 @@
+{
+    "machine_info": {
+        "node": "dzdell",
+        "processor": "",
+        "machine": "x86_64",
+        "python_compiler": "Clang 21.1.4 ",
+        "python_implementation": "CPython",
+        "python_implementation_version": "3.12.12",
+        "python_version": "3.12.12",
+        "python_build": [
+            "main",
+            "Dec 17 2025 21:10:06"
+        ],
+        "release": "6.18.3-100.fc42.x86_64",
+        "system": "Linux",
+        "cpu": {
+            "python_version": "3.12.12.final.0 (64 bit)",
+            "cpuinfo_version": [
+                9,
+                0,
+                0
+            ],
+            "cpuinfo_version_string": "9.0.0",
+            "arch": "X86_64",
+            "bits": 64,
+            "count": 22,
+            "arch_string_raw": "x86_64",
+            "vendor_id_raw": "GenuineIntel",
+            "brand_raw": "Intel(R) Core(TM) Ultra 9 185H",
+            "hz_advertised_friendly": "1.8892 GHz",
+            "hz_actual_friendly": "1.8892 GHz",
+            "hz_advertised": [
+                1889190000,
+                0
+            ],
+            "hz_actual": [
+                1889190000,
+                0
+            ],
+            "stepping": 4,
+            "model": 170,
+            "family": 6,
+            "flags": [
+                "3dnowprefetch",
+                "abm",
+                "acpi",
+                "adx",
+                "aes",
+                "aperfmperf",
+                "apic",
+                "arat",
+                "arch_capabilities",
+                "arch_lbr",
+                "arch_perfmon",
+                "art",
+                "avx",
+                "avx2",
+                "avx_vnni",
+                "bmi1",
+                "bmi2",
+                "bts",
+                "bus_lock_detect",
+                "clflush",
+                "clflushopt",
+                "clwb",
+                "cmov",
+                "constant_tsc",
+                "cpuid",
+                "cpuid_fault",
+                "cx16",
+                "cx8",
+                "de",
+                "ds_cpl",
+                "dtes64",
+                "dtherm",
+                "dts",
+                "epb",
+                "ept",
+                "ept_ad",
+                "erms",
+                "est",
+                "f16c",
+                "flexpriority",
+                "flush_l1d",
+                "fma",
+                "fpu",
+                "fsgsbase",
+                "fsrm",
+                "fxsr",
+                "gfni",
+                "hfi",
+                "ht",
+                "hwp",
+                "hwp_act_window",
+                "hwp_epp",
+                "hwp_notify",
+                "hwp_pkg_req",
+                "ibpb",
+                "ibrs",
+                "ibrs_enhanced",
+                "ibt",
+                "ida",
+                "intel_pt",
+                "invpcid",
+                "lahf_lm",
+                "lm",
+                "mca",
+                "mce",
+                "md_clear",
+                "mmx",
+                "monitor",
+                "movbe",
+                "movdir64b",
+                "movdiri",
+                "msr",
+                "mtrr",
+                "nonstop_tsc",
+                "nopl",
+                "nx",
+                "ospke",
+                "pae",
+                "pat",
+                "pbe",
+                "pcid",
+                "pclmulqdq",
+                "pconfig",
+                "pdcm",
+                "pdpe1gb",
+                "pebs",
+                "pge",
+                "pku",
+                "pln",
+                "pni",
+                "popcnt",
+                "pse",
+                "pse36",
+                "pts",
+                "rdpid",
+                "rdrand",
+                "rdseed",
+                "rdtscp",
+                "rep_good",
+                "sdbg",
+                "sep",
+                "serialize",
+                "sha_ni",
+                "smap",
+                "smep",
+                "smx",
+                "split_lock_detect",
+                "ss",
+                "ssbd",
+                "sse",
+                "sse2",
+                "sse4_1",
+                "sse4_2",
+                "ssse3",
+                "stibp",
+                "syscall",
+                "tm",
+                "tm2",
+                "tpr_shadow",
+                "tsc",
+                "tsc_adjust",
+                "tsc_deadline_timer",
+                "tsc_known_freq",
+                "umip",
+                "user_shstk",
+                "vaes",
+                "vme",
+                "vmx",
+                "vnmi",
+                "vpclmulqdq",
+                "vpid",
+                "waitpkg",
+                "x2apic",
+                "xgetbv1",
+                "xsave",
+                "xsavec",
+                "xsaveopt",
+                "xsaves",
+                "xtopology",
+                "xtpr"
+            ],
+            "l3_cache_size": 25165824,
+            "l2_cache_size": 18874368,
+            "l1_data_cache_size": 557056,
+            "l1_instruction_cache_size": 917504
+        }
+    },
+    "commit_info": {
+        "id": "50807f120728d2bdf7d9a996c15cc74ba7141007",
+        "time": "2026-02-13T11:15:13Z",
+        "author_time": "2026-02-13T11:15:13Z",
+        "dirty": true,
+        "project": "deny_rust",
+        "branch": "simple"
+    },
+    "benchmarks": [
+        {
+            "group": null,
+            "name": "test_python_prompt_pre_fetch[basic_profanity-clean_text]",
+            "fullname": "test_benchmark_deny.py::test_python_prompt_pre_fetch[basic_profanity-clean_text]",
+            "params": {
+                "python_test_case": [
+                    {
+                        "name": "basic_profanity",
+                        "words": [
+                            "badword",
+                            "offensive",
+                            "inappropriate"
+                        ]
+                    },
+                    {
+                        "name": "clean_text",
+                        "text": "This is a completely clean message with no issues",
+                        "should_block": false
+                    },
+                    false
+                ]
+            },
+            "param": "basic_profanity-clean_text",
+            "extra_info": {},
+            "options": {
+                "disable_gc": true,
+                "timer": "perf_counter",
+                "min_rounds": 3,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 3.937600013159681e-05,
+                "max": 0.00010925199967459776,
+                "mean": 4.371434660799594e-05,
+                "stddev": 4.69641119203503e-06,
+                "rounds": 2888,
+                "median": 4.292349967727205e-05,
+                "iqr": 1.5084997357917018e-06,
+                "q1": 4.221149993099971e-05,
+                "q3": 4.371999966679141e-05,
+                "iqr_outliers": 282,
+                "stddev_outliers": 128,
+                "outliers": "128;282",
+                "ld15iqr": 3.996499981440138e-05,
+                "hd15iqr": 4.598399937094655e-05,
+                "ops": 22875.785127647006,
+                "total": 0.12624703300389228,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_python_prompt_pre_fetch[basic_profanity-contains_badword]",
+            "fullname": "test_benchmark_deny.py::test_python_prompt_pre_fetch[basic_profanity-contains_badword]",
+            "params": {
+                "python_test_case": [
+                    {
+                        "name": "basic_profanity",
+                        "words": [
+                            "badword",
+                            "offensive",
+                            "inappropriate"
+                        ]
+                    },
+                    {
+                        "name": "contains_badword",
+                        "text": "This message contains a badword in it",
+                        "should_block": true
+                    },
+                    true
+                ]
+            },
+            "param": "basic_profanity-contains_badword",
+            "extra_info": {},
+            "options": {
+                "disable_gc": true,
+                "timer": "perf_counter",
+                "min_rounds": 3,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 6.0521999330376275e-05,
+                "max": 0.00043303700113028754,
+                "mean": 6.816718570216545e-05,
+                "stddev": 9.853454236307387e-06,
+                "rounds": 5229,
+                "median": 6.652200136159081e-05,
+                "iqr": 3.341249339428032e-06,
+                "q1": 6.526900097014732e-05,
+                "q3": 6.861025030957535e-05,
+                "iqr_outliers": 353,
+                "stddev_outliers": 200,
+                "outliers": "200;353",
+                "ld15iqr": 6.0521999330376275e-05,
+                "hd15iqr": 7.362399992416613e-05,
+                "ops": 14669.814951275497,
+                "total": 0.35644621403662313,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_python_prompt_pre_fetch[basic_profanity-contains_password]",
+            "fullname": "test_benchmark_deny.py::test_python_prompt_pre_fetch[basic_profanity-contains_password]",
+            "params": {
+                "python_test_case": [
+                    {
+                        "name": "basic_profanity",
+                        "words": [
+                            "badword",
+                            "offensive",
+                            "inappropriate"
+                        ]
+                    },
+                    {
+                        "name": "contains_password",
+                        "text": "Please enter your password here",
+                        "should_block": true
+                    },
+                    false
+                ]
+            },
+            "param": "basic_profanity-contains_password",
+            "extra_info": {},
+            "options": {
+                "disable_gc": true,
+                "timer": "perf_counter",
+                "min_rounds": 3,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 3.9288999687414616e-05,
+                "max": 0.00013693300024897326,
+                "mean": 4.357966046688305e-05,
+                "stddev": 4.855550015970614e-06,
+                "rounds": 10544,
+                "median": 4.283599992049858e-05,
+                "iqr": 1.3865001164958812e-06,
+                "q1": 4.216900015308056e-05,
+                "q3": 4.355550026957644e-05,
+                "iqr_outliers": 969,
+                "stddev_outliers": 379,
+                "outliers": "379;969",
+                "ld15iqr": 4.0101000195136294e-05,
+                "hd15iqr": 4.5636999857379124e-05,
+                "ops": 22946.48442155527,
+                "total": 0.4595039399628149,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_python_prompt_pre_fetch[basic_profanity-contains_ssn]",
+            "fullname": "test_benchmark_deny.py::test_python_prompt_pre_fetch[basic_profanity-contains_ssn]",
+            "params": {
+                "python_test_case": [
+                    {
+                        "name": "basic_profanity",
+                        "words": [
+                            "badword",
+                            "offensive",
+                            "inappropriate"
+                        ]
+                    },
+                    {
+                        "name": "contains_ssn",
+                        "text": "My ssn is 123-45-6789",
+                        "should_block": true
+                    },
+                    false
+                ]
+            },
+            "param": "basic_profanity-contains_ssn",
+            "extra_info": {},
+            "options": {
+                "disable_gc": true,
+                "timer": "perf_counter",
+                "min_rounds": 3,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 3.9259999539353885e-05,
+                "max": 0.00011366400030965451,
+                "mean": 4.367272991988681e-05,
+                "stddev": 4.805434316123676e-06,
+                "rounds": 9790,
+                "median": 4.289199932827614e-05,
+                "iqr": 1.3150001905160025e-06,
+                "q1": 4.2298999687773176e-05,
+                "q3": 4.361399987828918e-05,
+                "iqr_outliers": 895,
+                "stddev_outliers": 367,
+                "outliers": "367;895",
+                "ld15iqr": 4.0349001210415736e-05,
+                "hd15iqr": 4.559300032269675e-05,
+                "ops": 22897.58395764127,
+                "total": 0.42755602591569186,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_python_prompt_pre_fetch[basic_profanity-contains_asdf]",
+            "fullname": "test_benchmark_deny.py::test_python_prompt_pre_fetch[basic_profanity-contains_asdf]",
+            "params": {
+                "python_test_case": [
+                    {
+                        "name": "basic_profanity",
+                        "words": [
+                            "badword",
+                            "offensive",
+                            "inappropriate"
+                        ]
+                    },
+                    {
+                        "name": "contains_asdf",
+                        "text": "This contains asdf word",
+                        "should_block": true
+                    },
+                    false
+                ]
+            },
+            "param": "basic_profanity-contains_asdf",
+            "extra_info": {},
+            "options": {
+                "disable_gc": true,
+                "timer": "perf_counter",
+                "min_rounds": 3,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 3.925500095647294e-05,
+                "max": 0.00016752400006225798,
+                "mean": 4.339362867589228e-05,
+                "stddev": 4.8340406841003e-06,
+                "rounds": 11160,
+                "median": 4.267700023774523e-05,
+                "iqr": 1.223000253958162e-06,
+                "q1": 4.210599945508875e-05,
+                "q3": 4.332899970904691e-05,
+                "iqr_outliers": 990,
+                "stddev_outliers": 356,
+                "outliers": "356;990",
+                "ld15iqr": 4.027900104119908e-05,
+                "hd15iqr": 4.516599983617198e-05,
+                "ops": 23044.857747873917,
+                "total": 0.48427289602295787,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_python_prompt_pre_fetch[basic_profanity-multiple_deny_words]",
+            "fullname": "test_benchmark_deny.py::test_python_prompt_pre_fetch[basic_profanity-multiple_deny_words]",
+            "params": {
+                "python_test_case": [
+                    {
+                        "name": "basic_profanity",
+                        "words": [
+                            "badword",
+                            "offensive",
+                            "inappropriate"
+                        ]
+                    },
+                    {
+                        "name": "multiple_deny_words",
+                        "text": "This has both password and secret in it",
+                        "should_block": true
+                    },
+                    false
+                ]
+            },
+            "param": "basic_profanity-multiple_deny_words",
+            "extra_info": {},
+            "options": {
+                "disable_gc": true,
+                "timer": "perf_counter",
+                "min_rounds": 3,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 3.9541000660392456e-05,
+                "max": 0.00012641899957088754,
+                "mean": 4.362993058046983e-05,
+                "stddev": 4.892132375771594e-06,
+                "rounds": 4667,
+                "median": 4.283999987819698e-05,
+                "iqr": 1.2667510418395977e-06,
+                "q1": 4.2263998693670146e-05,
+                "q3": 4.3530749735509744e-05,
+                "iqr_outliers": 452,
+                "stddev_outliers": 160,
+                "outliers": "160;452",
+                "ld15iqr": 4.039500163344201e-05,
+                "hd15iqr": 4.54439996246947e-05,
+                "ops": 22920.04563600274,
+                "total": 0.2036208860190527,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_python_prompt_pre_fetch[basic_profanity-case_variation]",
+            "fullname": "test_benchmark_deny.py::test_python_prompt_pre_fetch[basic_profanity-case_variation]",
+            "params": {
+                "python_test_case": [
+                    {
+                        "name": "basic_profanity",
+                        "words": [
+                            "badword",
+                            "offensive",
+                            "inappropriate"
+                        ]
+                    },
+                    {
+                        "name": "case_variation",
+                        "text": "The Admin user has ROOT access",
+                        "should_block": true
+                    },
+                    false
+                ]
+            },
+            "param": "basic_profanity-case_variation",
+            "extra_info": {},
+            "options": {
+                "disable_gc": true,
+                "timer": "perf_counter",
+                "min_rounds": 3,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 3.992500023741741e-05,
+                "max": 0.000139575999128283,
+                "mean": 4.3796158981564504e-05,
+                "stddev": 4.89106938496307e-06,
+                "rounds": 5982,
+                "median": 4.30014997618855e-05,
+                "iqr": 1.2740001693600789e-06,
+                "q1": 4.241399983584415e-05,
+                "q3": 4.368800000520423e-05,
+                "iqr_outliers": 553,
+                "stddev_outliers": 216,
+                "outliers": "216;553",
+                "ld15iqr": 4.054400051245466e-05,
+                "hd15iqr": 4.559900116873905e-05,
+                "ops": 22833.052561091914,
+                "total": 0.26198862302771886,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_python_prompt_pre_fetch[basic_profanity-special_chars_text]",
+            "fullname": "test_benchmark_deny.py::test_python_prompt_pre_fetch[basic_profanity-special_chars_text]",
+            "params": {
+                "python_test_case": [
+                    {
+                        "name": "basic_profanity",
+                        "words": [
+                            "badword",
+                            "offensive",
+                            "inappropriate"
+                        ]
+                    },
+                    {
+                        "name": "special_chars_text",
+                        "text": "Contact test@example for more info",
+                        "should_block": true
+                    },
+                    false
+                ]
+            },
+            "param": "basic_profanity-special_chars_text",
+            "extra_info": {},
+            "options": {
+                "disable_gc": true,
+                "timer": "perf_counter",
+                "min_rounds": 3,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 3.939099951821845e-05,
+                "max": 0.0006428800006688107,
+                "mean": 4.490944694523995e-05,
+                "stddev": 1.2713514226129258e-05,
+                "rounds": 6965,
+                "median": 4.328400063968729e-05,
+                "iqr": 2.1609994291793555e-06,
+                "q1": 4.248100049153436e-05,
+                "q3": 4.4641999920713715e-05,
+                "iqr_outliers": 485,
+                "stddev_outliers": 139,
+                "outliers": "139;485",
+                "ld15iqr": 3.939099951821845e-05,
+                "hd15iqr": 4.7886000174912624e-05,
+                "ops": 22267.02994626818,
+                "total": 0.31279429797359626,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_python_prompt_pre_fetch[basic_profanity-long_text]",
+            "fullname": "test_benchmark_deny.py::test_python_prompt_pre_fetch[basic_profanity-long_text]",
+            "params": {
+                "python_test_case": [
+                    {
+                        "name": "basic_profanity",
+                        "words": [
+                            "badword",
+                            "offensive",
+                            "inappropriate"
+                        ]
+                    },
+                    {
+                        "name": "long_text",
+                        "text": "      Former Norwegian Prime Minister Thorbj\u00f8rn Jagland has been charged with gross corruption over his ties with the US sex offender Jeffrey Epstein, police have said.     The charge was brought after the Council of Europe lifted Jagland's immunity, which he enjoyed because of his past diplomatic role. He denies criminal liability and is willing to cooperate, his lawyer says.      Emails released by the US government are thought to show that Jagland planned solo and family visits to Epstein's homes in Paris, New York and Palm Beach after the billionaire was convicted of a child sex offence.      Three of Jagland's properties were searched by Norwegian crime unit \u00d8kokrim and he is now expected to be questioned.      As well as serving as prime minister from 1996 to 1997, Jagland is also a former head of the Norwegian Nobel Committee and spent a decade as secretary general of the Council of Europe.      Jagland had diplomatic immunity from heading the Council, Europe's watchdog for democracy and human rights, for alleged acts carried out during his 2009 to 2019 tenure. This is a very long text that contains multiple sentences and paragraphs. It goes on and on with various content. Somewhere in here there might be a word1 that triggers the filter. The text continues with more information and details about various topics.",
+                        "should_block": true
+                    },
+                    false
+                ]
+            },
+            "param": "basic_profanity-long_text",
+            "extra_info": {},
+            "options": {
+                "disable_gc": true,
+                "timer": "perf_counter",
+                "min_rounds": 3,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 4.3201000153203495e-05,
+                "max": 0.00016258699906757101,
+                "mean": 4.946233714350531e-05,
+                "stddev": 5.742866319177744e-06,
+                "rounds": 9002,
+                "median": 4.870100019616075e-05,
+                "iqr": 2.0540010154945776e-06,
+                "q1": 4.769799852510914e-05,
+                "q3": 4.975199954060372e-05,
+                "iqr_outliers": 796,
+                "stddev_outliers": 349,
+                "outliers": "349;796",
+                "ld15iqr": 4.461800017452333e-05,
+                "hd15iqr": 5.283800055622123e-05,
+                "ops": 20217.402932228924,
+                "total": 0.4452599589658348,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_python_prompt_pre_fetch[basic_profanity-short_text]",
+            "fullname": "test_benchmark_deny.py::test_python_prompt_pre_fetch[basic_profanity-short_text]",
+            "params": {
+                "python_test_case": [
+                    {
+                        "name": "basic_profanity",
+                        "words": [
+                            "badword",
+                            "offensive",
+                            "inappropriate"
+                        ]
+                    },
+                    {
+                        "name": "short_text",
+                        "text": "a",
+                        "should_block": true
+                    },
+                    false
+                ]
+            },
+            "param": "basic_profanity-short_text",
+            "extra_info": {},
+            "options": {
+                "disable_gc": true,
+                "timer": "perf_counter",
+                "min_rounds": 3,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 4.290200013201684e-05,
+                "max": 0.00021204099903116003,
+                "mean": 4.743295597703661e-05,
+                "stddev": 5.645953133251053e-06,
+                "rounds": 9338,
+                "median": 4.632600030163303e-05,
+                "iqr": 1.820000761654228e-06,
+                "q1": 4.5560000216937624e-05,
+                "q3": 4.738000097859185e-05,
+                "iqr_outliers": 972,
+                "stddev_outliers": 403,
+                "outliers": "403;972",
+                "ld15iqr": 4.290200013201684e-05,
+                "hd15iqr": 5.011199937143829e-05,
+                "ops": 21082.388381700755,
+                "total": 0.4429289429135679,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_python_prompt_pre_fetch[basic_profanity-empty_text]",
+            "fullname": "test_benchmark_deny.py::test_python_prompt_pre_fetch[basic_profanity-empty_text]",
+            "params": {
+                "python_test_case": [
+                    {
+                        "name": "basic_profanity",
+                        "words": [
+                            "badword",
+                            "offensive",
+                            "inappropriate"
+                        ]
+                    },
+                    {
+                        "name": "empty_text",
+                        "text": "",
+                        "should_block": false
+                    },
+                    false
+                ]
+            },
+            "param": "basic_profanity-empty_text",
+            "extra_info": {},
+            "options": {
+                "disable_gc": true,
+                "timer": "perf_counter",
+                "min_rounds": 3,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 4.316299964557402e-05,
+                "max": 0.00012759600031131413,
+                "mean": 4.7634563984080234e-05,
+                "stddev": 5.298101676833533e-06,
+                "rounds": 4656,
+                "median": 4.6657999519084115e-05,
+                "iqr": 1.6655003491905518e-06,
+                "q1": 4.590049957187148e-05,
+                "q3": 4.756599992106203e-05,
+                "iqr_outliers": 488,
+                "stddev_outliers": 195,
+                "outliers": "195;488",
+                "ld15iqr": 4.3520998588064685e-05,
+                "hd15iqr": 5.0071999794454314e-05,
+                "ops": 20993.159511950318,
+                "total": 0.22178652990987757,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_python_prompt_pre_fetch[basic_profanity-numeric_text]",
+            "fullname": "test_benchmark_deny.py::test_python_prompt_pre_fetch[basic_profanity-numeric_text]",
+            "params": {
+                "python_test_case": [
+                    {
+                        "name": "basic_profanity",
+                        "words": [
+                            "badword",
+                            "offensive",
+                            "inappropriate"
+                        ]
+                    },
+                    {
+                        "name": "numeric_text",
+                        "text": "12345 67890 numbers only",
+                        "should_block": false
+                    },
+                    false
+                ]
+            },
+            "param": "basic_profanity-numeric_text",
+            "extra_info": {},
+            "options": {
+                "disable_gc": true,
+                "timer": "perf_counter",
+                "min_rounds": 3,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 3.9427999581675977e-05,
+                "max": 0.0002474349985277513,
+                "mean": 4.671100395266352e-05,
+                "stddev": 7.89383489325672e-06,
+                "rounds": 5583,
+                "median": 4.5777000195812434e-05,
+                "iqr": 2.525249783502659e-06,
+                "q1": 4.439075064510689e-05,
+                "q3": 4.691600042860955e-05,
+                "iqr_outliers": 581,
+                "stddev_outliers": 212,
+                "outliers": "212;581",
+                "ld15iqr": 4.060399987793062e-05,
+                "hd15iqr": 5.070400038675871e-05,
+                "ops": 21408.2317950903,
+                "total": 0.26078753506772046,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_python_prompt_pre_fetch[security_keywords-clean_text]",
+            "fullname": "test_benchmark_deny.py::test_python_prompt_pre_fetch[security_keywords-clean_text]",
+            "params": {
+                "python_test_case": [
+                    {
+                        "name": "security_keywords",
+                        "words": [
+                            "password",
+                            "secret",
+                            "apikey",
+                            "token"
+                        ]
+                    },
+                    {
+                        "name": "clean_text",
+                        "text": "This is a completely clean message with no issues",
+                        "should_block": false
+                    },
+                    false
+                ]
+            },
+            "param": "security_keywords-clean_text",
+            "extra_info": {},
+            "options": {
+                "disable_gc": true,
+                "timer": "perf_counter",
+                "min_rounds": 3,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 3.932599975087214e-05,
+                "max": 0.00012150000111432746,
+                "mean": 4.376554271804785e-05,
+                "stddev": 4.740186666038474e-06,
+                "rounds": 9937,
+                "median": 4.304599860915914e-05,
+                "iqr": 1.2942514331371058e-06,
+                "q1": 4.2435998693690635e-05,
+                "q3": 4.373025012682774e-05,
+                "iqr_outliers": 922,
+                "stddev_outliers": 343,
+                "outliers": "343;922",
+                "ld15iqr": 4.049800008942839e-05,
+                "hd15iqr": 4.567799987853505e-05,
+                "ops": 22849.025463761114,
+                "total": 0.43489819798924145,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_python_prompt_pre_fetch[security_keywords-contains_badword]",
+            "fullname": "test_benchmark_deny.py::test_python_prompt_pre_fetch[security_keywords-contains_badword]",
+            "params": {
+                "python_test_case": [
+                    {
+                        "name": "security_keywords",
+                        "words": [
+                            "password",
+                            "secret",
+                            "apikey",
+                            "token"
+                        ]
+                    },
+                    {
+                        "name": "contains_badword",
+                        "text": "This message contains a badword in it",
+                        "should_block": true
+                    },
+                    false
+                ]
+            },
+            "param": "security_keywords-contains_badword",
+            "extra_info": {},
+            "options": {
+                "disable_gc": true,
+                "timer": "perf_counter",
+                "min_rounds": 3,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 3.964500137954019e-05,
+                "max": 0.0002942430000985041,
+                "mean": 4.580217556531212e-05,
+                "stddev": 1.0458596521592298e-05,
+                "rounds": 8749,
+                "median": 4.401600017445162e-05,
+                "iqr": 2.750251042016316e-06,
+                "q1": 4.2930998461088166e-05,
+                "q3": 4.568124950310448e-05,
+                "iqr_outliers": 566,
+                "stddev_outliers": 238,
+                "outliers": "238;566",
+                "ld15iqr": 3.964500137954019e-05,
+                "hd15iqr": 4.9810001655714586e-05,
+                "ops": 21833.024035594968,
+                "total": 0.4007232340209157,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_python_prompt_pre_fetch[security_keywords-contains_password]",
+            "fullname": "test_benchmark_deny.py::test_python_prompt_pre_fetch[security_keywords-contains_password]",
+            "params": {
+                "python_test_case": [
+                    {
+                        "name": "security_keywords",
+                        "words": [
+                            "password",
+                            "secret",
+                            "apikey",
+                            "token"
+                        ]
+                    },
+                    {
+                        "name": "contains_password",
+                        "text": "Please enter your password here",
+                        "should_block": true
+                    },
+                    true
+                ]
+            },
+            "param": "security_keywords-contains_password",
+            "extra_info": {},
+            "options": {
+                "disable_gc": true,
+                "timer": "perf_counter",
+                "min_rounds": 3,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 6.5144000473083e-05,
+                "max": 0.00014257400107453577,
+                "mean": 7.178784775293957e-05,
+                "stddev": 6.966211864889293e-06,
+                "rounds": 1156,
+                "median": 7.008100055827526e-05,
+                "iqr": 3.461500455159694e-06,
+                "q1": 6.873499933135463e-05,
+                "q3": 7.219649978651432e-05,
+                "iqr_outliers": 94,
+                "stddev_outliers": 74,
+                "outliers": "74;94",
+                "ld15iqr": 6.5144000473083e-05,
+                "hd15iqr": 7.7402000897564e-05,
+                "ops": 13929.93426187585,
+                "total": 0.08298675200239813,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_python_prompt_pre_fetch[security_keywords-contains_ssn]",
+            "fullname": "test_benchmark_deny.py::test_python_prompt_pre_fetch[security_keywords-contains_ssn]",
+            "params": {
+                "python_test_case": [
+                    {
+                        "name": "security_keywords",
+                        "words": [
+                            "password",
+                            "secret",
+                            "apikey",
+                            "token"
+                        ]
+                    },
+                    {
+                        "name": "contains_ssn",
+                        "text": "My ssn is 123-45-6789",
+                        "should_block": true
+                    },
+                    false
+                ]
+            },
+            "param": "security_keywords-contains_ssn",
+            "extra_info": {},
+            "options": {
+                "disable_gc": true,
+                "timer": "perf_counter",
+                "min_rounds": 3,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 4.256500142219011e-05,
+                "max": 0.0001111149995267624,
+                "mean": 4.73930545809778e-05,
+                "stddev": 5.464562391483895e-06,
+                "rounds": 2437,
+                "median": 4.620300023816526e-05,
+                "iqr": 1.755498942657141e-06,
+                "q1": 4.545075080386596e-05,
+                "q3": 4.72062497465231e-05,
+                "iqr_outliers": 276,
+                "stddev_outliers": 121,
+                "outliers": "121;276",
+                "ld15iqr": 4.2964999011019245e-05,
+                "hd15iqr": 4.984900078852661e-05,
+                "ops": 21100.138170907663,
+                "total": 0.1154968740138429,
+                "iterations": 1
+            }
+        }
+    ],
+    "datetime": "2026-02-13T11:59:12.499902+00:00",
+    "version": "5.2.3"
+}

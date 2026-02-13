@@ -28,11 +28,18 @@ help:
 build b:
 	@echo "Running cargo build..."
 	@cargo build
+	uv cache clean deny_rust
+	uv run maturin build --release
+	uv run main_rs.py
+
 
 # help: build-release br	- Run cargo build --release
 build-release br:
 	@echo "Running cargo build --release..."
 	@cargo build --release
+	uv cache clean deny_rust
+	uv run maturin build --release
+	uv run pytest tests/test_main_rs.py
 
 # =============================================================================
 # TEST
