@@ -1,0 +1,41 @@
+{
+  "deny_word_lists": [
+    {
+      "name": "random_words_20",
+      "words": [
+        "abracadabra",
+        "alakazam",
+        "hocuspocus",
+        "presto",
+        "shazam",
+        "voila",
+        "eureka",
+        "sesame",
+        "mumbo",
+        "jumbo",
+        "voodoo",
+        "juju",
+        "mojo",
+        "karma",
+        "nirvana",
+        "zen",
+        "chakra",
+        "mantra",
+        "tantra",
+        "sutra"
+      ]
+    }
+  ],
+  "sample_texts": [
+    {
+      "name": "random_text_1000",
+      "text": "The ancient wizard stood before the mystical portal and whispered the sacred words of power. With a wave of his gnarled staff he proclaimed abracadabra and the gateway began to shimmer with ethereal light. His apprentice watched in amazement as the master demonstrated the art of alakazam transforming ordinary stones into precious gems. The crowd gathered in the town square gasped when the magician performed his famous hocuspocus trick making the mayor's hat disappear and reappear on a statue across the plaza. Children squealed with delight as he shouted presto and pulled colorful scarves from thin air. The traveling performer knew that timing was everything so he waited for the perfect moment before exclaiming shazam and causing fireworks to explode overhead. The audience erupted in applause and someone in the back row yelled voila in appreciation. A scholar in the crowd muttered eureka having finally understood the mathematical principles behind the illusions. The old tales spoke of a secret cave entrance that would only open when you said sesame at precisely midnight under a full moon. Superstitious villagers believed in the power of mumbo rituals passed down through generations. The tribal elder performed the sacred jumbo ceremony to bless the harvest. Practitioners of the ancient arts claimed to harness voodoo energies from the spirit world. The shaman carried a leather pouch filled with juju charms for protection against evil forces. Musicians spoke of finding their mojo when inspiration struck during late night jam sessions. Philosophers debated the concept of karma and whether actions in this life affected the next. Seekers traveled to distant monasteries hoping to achieve nirvana through meditation and discipline. The meditation teacher encouraged students to find their zen by focusing on their breath. Yoga practitioners worked to align their chakra energy centers through specific poses and breathing techniques. Monks chanted their daily mantra as the sun rose over the mountain peaks. Ancient texts described tantra practices for spiritual enlightenment. Buddhist scholars studied the sutra teachings written on palm leaves centuries ago.",
+      "should_block": true
+    },
+    {
+      "name": "clean_text",
+      "text": "This is a clean text without any deny words.",
+      "should_block": false
+    }
+  ]
+}

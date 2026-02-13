@@ -195,15 +195,17 @@ async def benchmark_prompt_pre_fetch(
     return results
 
 
-def print_summary(results: Dict[str, Any]):
+def print_summary(results: Dict[str, Any], plugin_name: str = ""):
     """Print a summary of benchmark results.
     
     Args:
         results: Dictionary containing benchmark results.
+        plugin_name: Name of the plugin being benchmarked.
     """
-    # Overall statistics - only median and p99
+    # Overall statistics - median, p99, and max
     all_medians = [c['timings']['median_us'] for c in results['combinations']]
     all_p99s = [c['timings']['p99_us'] for c in results['combinations']]
+    all_maxs = [c['timings']['max_us'] for c in results['combinations']]
     
     total_time_s = results['total_time_us'] / 1_000_000
     
@@ -213,10 +215,11 @@ def print_summary(results: Dict[str, Any]):
     passed_tests = total_tests - len(mismatches)
     
     print("\n" + "="*80)
-    print("BENCHMARK RESULTS")
+    print(f"BENCHMARK RESULTS - {plugin_name}")
     print("="*80)
     print(f"Median:     {statistics.median(all_medians):.2f}μs")
     print(f"P99:        {statistics.median(all_p99s):.2f}μs")
+    print(f"Max:        {max(all_maxs):.2f}μs")
     print(f"Total Time: {total_time_s:.6f}s ({results['total_time_us']:.2f}μs)")
     print("="*80)
     print(f"\nTest Results: {passed_tests}/{total_tests} passed")
@@ -236,37 +239,85 @@ def print_summary(results: Dict[str, Any]):
     print("="*80)
 
 
-async def main(plugin_type: Type[Plugin] = DenyListPluginRust, 
-               warmup_runs: int = 5,
-               benchmark_runs: int = 100):
-    """Main benchmark function.
+def print_comparison(py_results: Dict[str, Any], rust_results: Dict[str, Any]):
+    """Print comparison between Python and Rust implementations.
     
     Args:
-        plugin_type: The plugin class type to instantiate (defaults to DenyListPluginRust).
+        py_results: Benchmark results for Python implementation.
+        rust_results: Benchmark results for Rust implementation.
+    """
+    py_medians = [c['timings']['median_us'] for c in py_results['combinations']]
+    rust_medians = [c['timings']['median_us'] for c in rust_results['combinations']]
+    
+    py_p99s = [c['timings']['p99_us'] for c in py_results['combinations']]
+    rust_p99s = [c['timings']['p99_us'] for c in rust_results['combinations']]
+    
+    py_maxs = [c['timings']['max_us'] for c in py_results['combinations']]
+    rust_maxs = [c['timings']['max_us'] for c in rust_results['combinations']]
+    
+    py_median = statistics.median(py_medians)
+    rust_median = statistics.median(rust_medians)
+    
+    py_p99 = statistics.median(py_p99s)
+    rust_p99 = statistics.median(rust_p99s)
+    
+    py_max = max(py_maxs)
+    rust_max = max(rust_maxs)
+    
+    py_total = py_results['total_time_us']
+    rust_total = rust_results['total_time_us']
+    
+    # Calculate speedup coefficients
+    median_speedup = py_median / rust_median if rust_median > 0 else 0
+    p99_speedup = py_p99 / rust_p99 if rust_p99 > 0 else 0
+    max_speedup = py_max / rust_max if rust_max > 0 else 0
+    total_speedup = py_total / rust_total if rust_total > 0 else 0
+    
+    print("\n" + "="*80)
+    print("PYTHON vs RUST COMPARISON")
+    print("="*80)
+    print(f"{'Metric':<20} {'Python':<15} {'Rust':<15} {'Speedup':<15}")
+    print("-"*80)
+    print(f"{'Median':<20} {py_median:>10.2f}μs {rust_median:>10.2f}μs {median_speedup:>10.2f}x")
+    print(f"{'P99':<20} {py_p99:>10.2f}μs {rust_p99:>10.2f}μs {p99_speedup:>10.2f}x")
+    print(f"{'Max':<20} {py_max:>10.2f}μs {rust_max:>10.2f}μs {max_speedup:>10.2f}x")
+    print(f"{'Total Time':<20} {py_total/1_000_000:>10.6f}s {rust_total/1_000_000:>10.6f}s {total_speedup:>10.2f}x")
+    print("="*80)
+    print(f"\n🚀 Rust is {median_speedup:.2f}x faster than Python (median)")
+    print(f"🚀 Rust is {p99_speedup:.2f}x faster than Python (p99)")
+    print(f"🚀 Rust is {max_speedup:.2f}x faster than Python (max)")
+    print(f"🚀 Rust is {total_speedup:.2f}x faster than Python (total time)")
+    print("="*80)
+
+
+async def run_benchmark(plugin_type: Type[Plugin],
+                       warmup_runs: int,
+                       benchmark_runs: int,
+                       config_path: str) -> Dict[str, Any]:
+    """Run benchmark for a specific plugin type.
+    
+    Args:
+        plugin_type: The plugin class type to instantiate.
         warmup_runs: Number of warmup runs before benchmarking.
         benchmark_runs: Number of benchmark runs for timing.
+        config_path: Path to the JSON configuration file.
+        
+    Returns:
+        Dictionary containing benchmark results.
     """
     print("="*80)
-    print("DENY CHECK BENCHMARK - prompt_pre_fetch")
+    print(f"BENCHMARKING: {plugin_type.__name__}")
     print("="*80)
-    print(f"Plugin Type: {plugin_type.__name__}")
     print(f"Warmup Runs: {warmup_runs}")
     print(f"Benchmark Runs: {benchmark_runs}")
     print("="*80)
     
-    #print("\nLoading deny_check_config.json...")
-    config = load_config()
-    
-    #print(f"\nFound {len(config['deny_word_lists'])} deny word lists")
-    #print(f"Found {len(config['sample_texts'])} sample texts")
-    
-    #print(f"\nCreating {plugin_type.__name__} instances...")
+    config = load_config(config_path)
     plugins = create_plugin_instances(config, plugin_type)
     
     print(f"\nSuccessfully created {len(plugins)} plugin instances")
-    
-    # Run benchmarks
     print("\nStarting benchmarks...")
+    
     results = await benchmark_prompt_pre_fetch(
         plugins, 
         config['sample_texts'],
@@ -275,13 +326,60 @@ async def main(plugin_type: Type[Plugin] = DenyListPluginRust,
         benchmark_runs=benchmark_runs
     )
     
-    # Print summary
-    print_summary(results)
+    print_summary(results, plugin_type.__name__)
+    
+    return results
+
+
+async def main(warmup_runs: int = 5,
+               benchmark_runs: int = 100,
+               config_path: str = "deny_check_config.json"):
+    """Main benchmark function that compares Python and Rust implementations.
+    
+    Args:
+        warmup_runs: Number of warmup runs before benchmarking.
+        benchmark_runs: Number of benchmark runs for timing.
+        config_path: Path to the JSON configuration file.
+    """
+    print("\n" + "="*80)
+    print("DENY CHECK BENCHMARK - Python vs Rust Comparison")
+    print("="*80)
+    
+    # Run Python benchmark
+    py_results = await run_benchmark(
+        DenyListPlugin,
+        warmup_runs,
+        benchmark_runs,
+        config_path
+    )
+    
+    # Run Rust benchmark
+    rust_results = await run_benchmark(
+        DenyListPluginRust,
+        warmup_runs,
+        benchmark_runs,
+        config_path
+    )
+    
+    # Print comparison
+    print_comparison(py_results, rust_results)
     
     # Save results to JSON
+    output_data = {
+        "python": py_results,
+        "rust": rust_results,
+        "comparison": {
+            "median_speedup": statistics.median([c['timings']['median_us'] for c in py_results['combinations']]) / 
+                            statistics.median([c['timings']['median_us'] for c in rust_results['combinations']]),
+            "p99_speedup": statistics.median([c['timings']['p99_us'] for c in py_results['combinations']]) / 
+                         statistics.median([c['timings']['p99_us'] for c in rust_results['combinations']]),
+            "total_speedup": py_results['total_time_us'] / rust_results['total_time_us']
+        }
+    }
+    
     output_file = "deny_check_results.json"
     with open(output_file, 'w') as f:
-        json.dump(results, f, indent=2)
+        json.dump(output_data, f, indent=2)
     print(f"\nDetailed results saved to: {output_file}")
 
 
@@ -290,8 +388,9 @@ if __name__ == "__main__":
     import argparse
     
     parser = argparse.ArgumentParser(description='Benchmark deny_check prompt_pre_fetch')
-    parser.add_argument('--warmup', type=int, default=0, help='Number of warmup runs (default: 5)')
-    parser.add_argument('--runs', type=int, default=10000, help='Number of benchmark runs (default: 100)')
+    parser.add_argument('--warmup', type=int, default=3000, help='Number of warmup runs (default: 5)')
+    parser.add_argument('--runs', type=int, default=30000, help='Number of benchmark runs (default: 100)')
+    parser.add_argument('--data', type=str, default='deny_check_config.json', help='JSON config file name (default: deny_check_config.json)')
     
     args = parser.parse_args()
     
@@ -302,8 +401,5 @@ if __name__ == "__main__":
     #deny_logger = logging.getLogger("plugins.deny_filter.deny")
     #deny_logger.addFilter(DenyWarningFilter())
     logging.getLogger("plugins.deny_filter.deny").setLevel(logging.ERROR)
-
     
-    
-    asyncio.run(main(warmup_runs=args.warmup, benchmark_runs=args.runs,plugin_type=DenyListPlugin))
-    asyncio.run(main(warmup_runs=args.warmup, benchmark_runs=args.runs,plugin_type=DenyListPluginRust))
+    asyncio.run(main(warmup_runs=args.warmup, benchmark_runs=args.runs, config_path=args.data))
