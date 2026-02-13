@@ -49,7 +49,7 @@ build-release br:
 test t:
 	@echo "Running cargo test..."
 	@cargo test
-	@uv run pytest
+	@uv run pytest -v -s 
 
 # =============================================================================
 # CARGO CHECKS

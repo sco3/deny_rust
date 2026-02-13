@@ -9,7 +9,7 @@ import asyncio
 import json
 import statistics
 from pathlib import Path
-from typing import List, Dict, Any, Type
+from typing import List, Dict, Any, Type, Protocol, runtime_checkable
 
 from plugins.deny_filter.deny_rust import DenyListPluginRust
 from plugins.deny_filter.deny import DenyListPlugin
@@ -17,12 +17,24 @@ from mcpgateway.plugins.framework import PluginConfig, Plugin, PluginContext
 from mcpgateway.plugins.framework.hooks.prompts import (
     PromptHookType,
     PromptPrehookPayload,
+    PromptPrehookResult,
 )
 from mcpgateway.plugins.framework.models import GlobalContext
 
 WARMUP_RUNS = 3000
 BENCHMARK_RUNS = 10000
 CONFIG_PATH = "data/deny_check_config_200.json"
+
+
+@runtime_checkable
+class PromptPreFetchPlugin(Protocol):
+    """Protocol for plugins that implement prompt_pre_fetch hook."""
+
+    async def prompt_pre_fetch(
+        self, payload: PromptPrehookPayload, context: PluginContext
+    ) -> PromptPrehookResult:
+        """The plugin hook run before a prompt is retrieved and rendered."""
+        ...
 
 
 def load_config(config_path: str) -> Dict[str, Any]:
@@ -37,7 +49,7 @@ def load_config(config_path: str) -> Dict[str, Any]:
 
 def create_plugin_instances(
     config: Dict[str, Any], plugin_type: Type[Plugin]
-) -> List[tuple]:
+) -> List[tuple[str, PromptPreFetchPlugin]]:
     """Create plugin instances for each deny word list."""
     plugins = []
 
@@ -57,7 +69,7 @@ def create_plugin_instances(
 
 
 async def benchmark_plugin(
-    plugins: List[tuple[str, Plugin]],
+    plugins: List[tuple[str, PromptPreFetchPlugin]],
     sample_texts: List[Dict[str, Any]],
     config: Dict[str, Any],
     warmup_runs: int = WARMUP_RUNS,
@@ -78,7 +90,7 @@ async def benchmark_plugin(
     }
 
     for plugin_name, plugin in plugins:
-        plugin_deny_words = None
+        plugin_deny_words = []
         for deny_list in config["deny_word_lists"]:
             if deny_list["name"] == plugin_name:
                 plugin_deny_words = deny_list["words"]
@@ -222,15 +234,13 @@ def print_comparison(py_results: Dict[str, Any], rust_results: Dict[str, Any]):
 async def test_benchmark_comparison():
     """Benchmark comparison with config"""
     config_path = CONFIG_PATH
-    warmup_runs = 5
-    benchmark_runs = 100
 
     print("\n" + "=" * 80)
     print("DENY CHECK BENCHMARK - Python vs Rust Comparison")
     print("=" * 80)
     print(f"Config: {config_path}")
-    print(f"Warmup Runs: {warmup_runs}")
-    print(f"Benchmark Runs: {benchmark_runs}")
+    print(f"Warmup Runs: {WARMUP_RUNS}")
+    print(f"Benchmark Runs: {BENCHMARK_RUNS}")
     print("=" * 80)
 
     config = load_config(config_path)
@@ -242,8 +252,6 @@ async def test_benchmark_comparison():
         py_plugins,
         config["sample_texts"],
         config,
-        warmup_runs=warmup_runs,
-        benchmark_runs=benchmark_runs,
     )
     print_summary(py_results, "DenyListPlugin (Python)")
 
@@ -254,8 +262,8 @@ async def test_benchmark_comparison():
         rust_plugins,
         config["sample_texts"],
         config,
-        warmup_runs=warmup_runs,
-        benchmark_runs=benchmark_runs,
+        warmup_runs=WARMUP_RUNS,
+        benchmark_runs=BENCHMARK_RUNS,
     )
     print_summary(rust_results, "DenyListPluginRust (Rust)")
 
@@ -278,4 +286,3 @@ async def test_benchmark_comparison():
     ), f"Rust implementation has {len(rust_mismatches)} mismatches"
 
 
-# Made with Bob
