@@ -18,6 +18,9 @@ build-backend = "maturin"
 features = ["pyo3/extension-module"]
 module-name = "deny_rust"
 
+[tool.pytest.ini_options]
+pythonpath = ["."]
+
 [dependency-groups]
 dev = [
     "black>=26.1.0",
