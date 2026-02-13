@@ -162,7 +162,6 @@ async def benchmark_prompt_pre_fetch(
             p99 = timings_us[p99_index]
             mean = statistics.mean(timings_us)
             min_time = min(timings_us)
-            max_time = max(timings_us)
             
             # Calculate total time for this combination
             total_time_combination = sum(timings_us)
@@ -182,7 +181,6 @@ async def benchmark_prompt_pre_fetch(
                     "p99_us": round(p99, 2),
                     "mean_us": round(mean, 2),
                     "min_us": round(min_time, 2),
-                    "max_us": round(max_time, 2),
                     "total_us": round(total_time_combination, 2)
                 }
             }
@@ -202,10 +200,9 @@ def print_summary(results: Dict[str, Any], plugin_name: str = ""):
         results: Dictionary containing benchmark results.
         plugin_name: Name of the plugin being benchmarked.
     """
-    # Overall statistics - median, p99, and max
+    # Overall statistics - median and p99
     all_medians = [c['timings']['median_us'] for c in results['combinations']]
     all_p99s = [c['timings']['p99_us'] for c in results['combinations']]
-    all_maxs = [c['timings']['max_us'] for c in results['combinations']]
     
     total_time_s = results['total_time_us'] / 1_000_000
     
@@ -219,7 +216,6 @@ def print_summary(results: Dict[str, Any], plugin_name: str = ""):
     print("="*80)
     print(f"Median:     {statistics.median(all_medians):.2f}μs")
     print(f"P99:        {statistics.median(all_p99s):.2f}μs")
-    print(f"Max:        {max(all_maxs):.2f}μs")
     print(f"Total Time: {total_time_s:.6f}s ({results['total_time_us']:.2f}μs)")
     print("="*80)
     print(f"\nTest Results: {passed_tests}/{total_tests} passed")
@@ -252,17 +248,11 @@ def print_comparison(py_results: Dict[str, Any], rust_results: Dict[str, Any]):
     py_p99s = [c['timings']['p99_us'] for c in py_results['combinations']]
     rust_p99s = [c['timings']['p99_us'] for c in rust_results['combinations']]
     
-    py_maxs = [c['timings']['max_us'] for c in py_results['combinations']]
-    rust_maxs = [c['timings']['max_us'] for c in rust_results['combinations']]
-    
     py_median = statistics.median(py_medians)
     rust_median = statistics.median(rust_medians)
     
     py_p99 = statistics.median(py_p99s)
     rust_p99 = statistics.median(rust_p99s)
-    
-    py_max = max(py_maxs)
-    rust_max = max(rust_maxs)
     
     py_total = py_results['total_time_us']
     rust_total = rust_results['total_time_us']
@@ -270,7 +260,6 @@ def print_comparison(py_results: Dict[str, Any], rust_results: Dict[str, Any]):
     # Calculate speedup coefficients
     median_speedup = py_median / rust_median if rust_median > 0 else 0
     p99_speedup = py_p99 / rust_p99 if rust_p99 > 0 else 0
-    max_speedup = py_max / rust_max if rust_max > 0 else 0
     total_speedup = py_total / rust_total if rust_total > 0 else 0
     
     print("\n" + "="*80)
@@ -280,12 +269,10 @@ def print_comparison(py_results: Dict[str, Any], rust_results: Dict[str, Any]):
     print("-"*80)
     print(f"{'Median':<20} {py_median:>10.2f}μs {rust_median:>10.2f}μs {median_speedup:>10.2f}x")
     print(f"{'P99':<20} {py_p99:>10.2f}μs {rust_p99:>10.2f}μs {p99_speedup:>10.2f}x")
-    print(f"{'Max':<20} {py_max:>10.2f}μs {rust_max:>10.2f}μs {max_speedup:>10.2f}x")
     print(f"{'Total Time':<20} {py_total/1_000_000:>10.6f}s {rust_total/1_000_000:>10.6f}s {total_speedup:>10.2f}x")
     print("="*80)
     print(f"\n🚀 Rust is {median_speedup:.2f}x faster than Python (median)")
     print(f"🚀 Rust is {p99_speedup:.2f}x faster than Python (p99)")
-    print(f"🚀 Rust is {max_speedup:.2f}x faster than Python (max)")
     print(f"🚀 Rust is {total_speedup:.2f}x faster than Python (total time)")
     print("="*80)
 
