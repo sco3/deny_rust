@@ -12,7 +12,14 @@ This module loads configurations for plugins.
 from pydantic import BaseModel
 
 # First-Party
-from mcpgateway.plugins.framework import Plugin, PluginConfig, PluginContext, PluginViolation, PromptPrehookPayload, PromptPrehookResult
+from mcpgateway.plugins.framework import (
+    Plugin,
+    PluginConfig,
+    PluginContext,
+    PluginViolation,
+    PromptPrehookPayload,
+    PromptPrehookResult,
+)
 from mcpgateway.services.logging_service import LoggingService
 from plugins.deny_filter.deny import DenyListConfig
 
@@ -34,13 +41,14 @@ class DenyListPluginRust(Plugin):
         """
         super().__init__(config)
         self._dconfig = DenyListConfig.model_validate(self._config.config)
-        #self._deny_list = []
-        #for word in self._dconfig.words:
+        # self._deny_list = []
+        # for word in self._dconfig.words:
         #    self._deny_list.append(word)
         self._deny_list = deny_rust.DenyList(self._dconfig.words)
-        
 
-    async def prompt_pre_fetch(self, payload: PromptPrehookPayload, context: PluginContext) -> PromptPrehookResult:
+    async def prompt_pre_fetch(
+        self, payload: PromptPrehookPayload, context: PluginContext
+    ) -> PromptPrehookResult:
         """The plugin hook run before a prompt is retrieved and rendered.
 
         Args:
@@ -51,16 +59,20 @@ class DenyListPluginRust(Plugin):
             The result of the plugin's analysis, including whether the prompt can proceed.
         """
         if payload.args:
-            #for key in payload.args:
-            if self._deny_list.scan (payload.args):
+            # for key in payload.args:
+            if self._deny_list.scan(payload.args):
                 violation = PluginViolation(
                     reason="Prompt not allowed",
                     description="A deny word was found in the prompt",
                     code="deny",
                     details={},
                 )
-                #logger.warning(f"Deny word detected in prompt argument '{key}'")
-                return PromptPrehookResult(modified_payload=payload, violation=violation, continue_processing=False)
+                # logger.warning(f"Deny word detected in prompt argument '{key}'")
+                return PromptPrehookResult(
+                    modified_payload=payload,
+                    violation=violation,
+                    continue_processing=False,
+                )
         return PromptPrehookResult(modified_payload=payload)
 
     async def shutdown(self) -> None:

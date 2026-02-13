@@ -35,7 +35,7 @@ def deny_plugin():
         kind=f"{DenyListPluginRust.__module__}.{DenyListPluginRust.__name__}",
         hooks=[PromptHookType.PROMPT_PRE_FETCH],
         priority=100,
-        config={"words": words}
+        config={"words": words},
     )
     return DenyListPluginRust(config=plugin_cfg)
 
@@ -43,13 +43,13 @@ def deny_plugin():
 def test_scan_str_with_violation(deny_list):
     """Test scan_str with text containing a denied word."""
     result = deny_list.scan_str("ok danger")
-    assert result 
+    assert result
 
 
 def test_scan_str_without_violation(deny_list):
     """Test scan_str with text not containing denied words."""
     result = deny_list.scan_str("        ok")
-    assert not result 
+    assert not result
 
 
 def test_scan_with_violation(deny_list):
@@ -73,8 +73,6 @@ def test_scan_repeated_call(deny_list):
 @pytest.mark.asyncio
 async def test_plugin_prompt_pre_fetch(deny_plugin, plugin_context):
     """Test DenyListPluginRust prompt_pre_fetch hook."""
-    payload = PromptPrehookPayload(
-        prompt_id="test", args={"text": "         ok"}
-    )
+    payload = PromptPrehookPayload(prompt_id="test", args={"text": "         ok"})
     result = await deny_plugin.prompt_pre_fetch(payload, plugin_context)
     assert result.violation is None

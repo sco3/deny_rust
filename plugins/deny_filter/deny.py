@@ -12,7 +12,14 @@ This module loads configurations for plugins.
 from pydantic import BaseModel
 
 # First-Party
-from mcpgateway.plugins.framework import Plugin, PluginConfig, PluginContext, PluginViolation, PromptPrehookPayload, PromptPrehookResult
+from mcpgateway.plugins.framework import (
+    Plugin,
+    PluginConfig,
+    PluginContext,
+    PluginViolation,
+    PromptPrehookPayload,
+    PromptPrehookResult,
+)
 from mcpgateway.services.logging_service import LoggingService
 
 # Initialize logging service first
@@ -45,7 +52,9 @@ class DenyListPlugin(Plugin):
         for word in self._dconfig.words:
             self._deny_list.append(word)
 
-    async def prompt_pre_fetch(self, payload: PromptPrehookPayload, context: PluginContext) -> PromptPrehookResult:
+    async def prompt_pre_fetch(
+        self, payload: PromptPrehookPayload, context: PluginContext
+    ) -> PromptPrehookResult:
         """The plugin hook run before a prompt is retrieved and rendered.
 
         Args:
@@ -65,7 +74,11 @@ class DenyListPlugin(Plugin):
                         details={},
                     )
                     logger.warning(f"Deny word detected in prompt argument '{key}'")
-                    return PromptPrehookResult(modified_payload=payload, violation=violation, continue_processing=False)
+                    return PromptPrehookResult(
+                        modified_payload=payload,
+                        violation=violation,
+                        continue_processing=False,
+                    )
         return PromptPrehookResult(modified_payload=payload)
 
     async def shutdown(self) -> None:
