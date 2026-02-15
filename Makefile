@@ -34,7 +34,7 @@ clean-cache:
 # help: build b			- Run cargo build
 build b: clean-cache
 	@echo "Running cargo build..."
-	@uv run maturin build --release
+	@uv run maturin build
 
 
 # help: build-release br	- Run cargo build --release
