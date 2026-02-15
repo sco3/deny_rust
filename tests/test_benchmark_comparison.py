@@ -143,9 +143,7 @@ async def benchmark_plugin(
                 timings_us.append(elapsed * 1_000_000)
 
                 if i == 0:
-                    actual_blocked = result is None or (
-                            hasattr(result, "violation") and result.violation is not None
-                    )
+                    actual_blocked = result.violation is not None
 
             # Statistics
             timings_us.sort()
