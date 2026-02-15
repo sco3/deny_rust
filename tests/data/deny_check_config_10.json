@@ -4,27 +4,20 @@
       "name": "random_words_10",
       "words": [
         "abracadabra",
-        "alakazam",
         "hocuspocus",
-        "presto",
-        "shazam",
-        "voila",
-        "eureka",
-        "sesame",
-        "mumbo",
-        "jumbo"
+        "voila"
       ]
     }
   ],
   "sample_texts": [
     {
-      "name": "random_text_1000",
-      "text": "The morning sun rose over the distant mountains casting golden rays across the peaceful valley below. Birds sang their melodious songs from the branches of ancient oak trees that had witnessed countless seasons pass. A gentle breeze carried ",
+      "name": "random_text_43",
+      "text": "The morning sun rose over the distant mountains.",
       "should_block": false
     },
     {
-      "name": "random_text_1000",
-      "text": "The morning sun rose over the distant mountains casting golden rays across the peaceful valley below. Birds sang their melodious songs from the branches of ancient oak trees that had witnessed countless seasons pass. A gentle breeze carried jumbo",
+      "name": "random_text_block_43",
+      "text": "The morning sun rose over the distant mountains. voila.",
       "should_block": true
     }
   ]

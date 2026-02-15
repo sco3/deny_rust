@@ -25,6 +25,8 @@ from mcpgateway.services.logging_service import LoggingService
 # Initialize logging service first
 logging_service = LoggingService()
 logger = logging_service.get_logger(__name__)
+print ("__name__:", __name__)
+
 
 
 class DenyListConfig(BaseModel):
@@ -73,7 +75,7 @@ class DenyListPlugin(Plugin):
                         code="deny",
                         details={},
                     )
-                    logger.warning(f"Deny word detected in prompt argument '{key}'")
+                    logger.warning("Deny word detected in prompt argument '%s'",key)
                     return PromptPrehookResult(
                         modified_payload=payload,
                         violation=violation,

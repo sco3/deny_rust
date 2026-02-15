@@ -8,6 +8,7 @@ import asyncio
 import json
 import pytest
 import statistics
+import logging 
 from mcpgateway.plugins.framework import PluginConfig, Plugin, PluginContext
 from mcpgateway.plugins.framework.hooks.prompts import (
     PromptHookType,
@@ -21,6 +22,14 @@ from typing import List, Dict, Any, Type, Protocol, runtime_checkable
 from plugins.deny_filter.deny import DenyListPlugin
 from plugins.deny_filter.deny_rust import DenyListPluginRust
 #from plugins.deny_filter.deny_rust_rs import DenyListPluginRustRs
+
+from mcpgateway.services.logging_service import LoggingService
+
+# Initialize logging service first
+loggingSvc = LoggingService()
+loggingSvc.get_logger("plugins.deny_filter.deny").setLevel(logging.ERROR)
+loggingSvc.get_logger("plugins.deny_filter.deny_rust").setLevel(logging.ERROR)
+loggingSvc.get_logger("plugins.deny_filter.deny_rust_rs").setLevel(logging.ERROR)
 
 
 WARMUP_RUNS = 3000
@@ -107,7 +116,8 @@ async def benchmark_plugin(
                 break
 
         for sample in sample_texts:
-            should_block = any(word in sample["text"] for word in plugin_deny_words)
+            # Use should_block from data file, not recalculated
+            should_block = sample.get("should_block", False)
 
             payload = PromptPrehookPayload(
                 prompt_id="benchmark_test",
@@ -295,16 +305,14 @@ async def test_benchmark_comparison():
     all_config_results = []
 
     for config_path in CONFIG_FILES:
-        # Extract word count from filename (e.g., "20" from "deny_check_config_20.json")
-        import re
-        match = re.search(r'_(\d+)\.json$', config_path)
-        word_count = match.group(1) if match else "unknown"
+        config = load_config(config_path)
+        
+        # Calculate actual word count from config
+        word_count = sum(len(deny_list["words"]) for deny_list in config["deny_word_lists"])
 
         print(f"\n{'=' * 80}")
         print(f"CONFIG: {config_path} ({word_count} words)")
         print(f"{'=' * 80}")
-
-        config = load_config(config_path)
 
         # Run each config RUNS_PER_CONFIG times
         config_run_results = []
@@ -410,7 +418,7 @@ async def test_benchmark_comparison():
         print(f"{'Avg P99':<20} {avg_first_p99:>10.2f}μs {avg_second_p99:>10.2f}μs {p99_speedup:>10.2f}x")
         print(
             f"{'Avg Total Time':<20} {avg_first_total / 1_000_000:>10.6f}s {avg_second_total / 1_000_000:>10.6f}s {total_speedup:>10.2f}x")
-        print(f"\n🚀 {second_name} is {median_speedup:.2f}x faster (median, {word_count} words)")
+        print(f"\n {second_name} is {median_speedup:.2f}x faster (median, {word_count} words)")
 
     print("\n" + "=" * 80)
 

@@ -2,10 +2,9 @@
 """Location: ./plugins/deny_filter/deny.py
 Copyright 2025
 SPDX-License-Identifier: Apache-2.0
-Authors: Fred Araujo
+Authors: Fred Araujo, Dmitry Zakharov
 
 Simple example plugin for searching and replacing text.
-This module loads configurations for plugins.
 """
 
 # Third-Party
@@ -64,7 +63,7 @@ class DenyListPluginRust(Plugin):
                     code="deny",
                     details={},
                 )
-                # logger.warning(f"Deny word detected in prompt argument '{key}'")
+                logger.warning("Deny word detected in prompt")
                 return PromptPrehookResult(
                     modified_payload=payload,
                     violation=violation,
