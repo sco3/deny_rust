@@ -27,8 +27,8 @@ help:
 # help: build b			- Run cargo build
 build b:
 	@echo "Running cargo build..."
-	find ~/.cache/uv -name deny_rust* -exec rm -rf \{\} \;
-	find .venv -name deny_rust* -exec rm -rf \{\} \;
+	find ~/.cache/uv -name deny_rust* -exec rm -rf \{\} \; || echo "not found"
+	find .venv -name deny_rust* -exec rm -rf \{\} \; || echo "not found"
 	@uv cache clean deny_rust
 	@cargo build
 	@uv run maturin build --release
@@ -37,8 +37,8 @@ build b:
 # help: build-release br	- Run cargo build --release
 build-release br:
 	@echo "Running cargo build --release..."
-	find ~/.cache/uv -name deny_rust* -exec rm -rf \{\} \;
-	find .venv -name deny_rust* -exec rm -rf \{\} \;
+	find ~/.cache/uv -name deny_rust* -exec rm -rf \{\} \; || echo "not found"
+	find .venv -name deny_rust* -exec rm -rf \{\} \; || echo "not found"
 	@uv cache clean deny_rust
 	@cargo build --release
 	@uv run maturin build --release
