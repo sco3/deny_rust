@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import List, Dict, Any, Type, Protocol, runtime_checkable
 
 from plugins.deny_filter.deny_rust import DenyListPluginRust
+from plugins.deny_filter.deny_rust_rs import DenyListPluginRustRs
 from plugins.deny_filter.deny import DenyListPlugin
 from mcpgateway.plugins.framework import PluginConfig, Plugin, PluginContext
 from mcpgateway.plugins.framework.hooks.prompts import (
@@ -23,7 +24,7 @@ from mcpgateway.plugins.framework.models import GlobalContext
 
 WARMUP_RUNS = 3000
 BENCHMARK_RUNS = 10000
-CONFIG_PATH = "data/deny_check_config_200.json"
+CONFIG_PATH = "data/deny_check_config_20.json"
 
 
 @runtime_checkable
@@ -190,53 +191,59 @@ def print_summary(results: Dict[str, Any], plugin_name: str):
     print("=" * 80)
 
 
-def print_comparison(py_results: Dict[str, Any], rust_results: Dict[str, Any]):
-    """Print comparison between Python and Rust - always visible."""
-    py_medians = [c["timings"]["median_us"] for c in py_results["combinations"]]
-    rust_medians = [c["timings"]["median_us"] for c in rust_results["combinations"]]
+def print_comparison(first_results: Dict[str, Any], second_results: Dict[str, Any], first_name: str, second_name: str):
+    """Print comparison between two implementations - always visible."""
+    first_medians = [c["timings"]["median_us"] for c in first_results["combinations"]]
+    second_medians = [c["timings"]["median_us"] for c in second_results["combinations"]]
 
-    py_p99s = [c["timings"]["p99_us"] for c in py_results["combinations"]]
-    rust_p99s = [c["timings"]["p99_us"] for c in rust_results["combinations"]]
+    first_p99s = [c["timings"]["p99_us"] for c in first_results["combinations"]]
+    second_p99s = [c["timings"]["p99_us"] for c in second_results["combinations"]]
 
-    py_median = statistics.median(py_medians)
-    rust_median = statistics.median(rust_medians)
+    first_median = statistics.median(first_medians)
+    second_median = statistics.median(second_medians)
 
-    py_p99 = statistics.median(py_p99s)
-    rust_p99 = statistics.median(rust_p99s)
+    first_p99 = statistics.median(first_p99s)
+    second_p99 = statistics.median(second_p99s)
 
-    py_total = py_results["total_time_us"]
-    rust_total = rust_results["total_time_us"]
+    first_total = first_results["total_time_us"]
+    second_total = second_results["total_time_us"]
 
-    median_speedup = py_median / rust_median if rust_median > 0 else 0
-    p99_speedup = py_p99 / rust_p99 if rust_p99 > 0 else 0
-    total_speedup = py_total / rust_total if rust_total > 0 else 0
+    median_speedup = first_median / second_median if second_median > 0 else 0
+    p99_speedup = first_p99 / second_p99 if second_p99 > 0 else 0
+    total_speedup = first_total / second_total if second_total > 0 else 0
 
     print("\n" + "=" * 80)
-    print("PYTHON vs RUST COMPARISON")
+    print(f"{first_name} vs {second_name} COMPARISON")
     print("=" * 80)
-    print(f"{'Metric':<20} {'Python':<15} {'Rust':<15} {'Speedup':<15}")
+    print(f"{'Metric':<20} {first_name:<15} {second_name:<15} {'Speedup':<15}")
     print("-" * 80)
     print(
-        f"{'Median':<20} {py_median:>10.2f}μs {rust_median:>10.2f}μs {median_speedup:>10.2f}x"
+        f"{'Median':<20} {first_median:>10.2f}μs {second_median:>10.2f}μs {median_speedup:>10.2f}x"
     )
-    print(f"{'P99':<20} {py_p99:>10.2f}μs {rust_p99:>10.2f}μs {p99_speedup:>10.2f}x")
+    print(f"{'P99':<20} {first_p99:>10.2f}μs {second_p99:>10.2f}μs {p99_speedup:>10.2f}x")
     print(
-        f"{'Total Time':<20} {py_total/1_000_000:>10.6f}s {rust_total/1_000_000:>10.6f}s {total_speedup:>10.2f}x"
+        f"{'Total Time':<20} {first_total/1_000_000:>10.6f}s {second_total/1_000_000:>10.6f}s {total_speedup:>10.2f}x"
     )
     print("=" * 80)
-    print(f"\n🚀 Rust is {median_speedup:.2f}x faster than Python (median)")
-    print(f"🚀 Rust is {p99_speedup:.2f}x faster than Python (p99)")
-    print(f"🚀 Rust is {total_speedup:.2f}x faster than Python (total time)")
+    print(f"\n🚀 {second_name} is {median_speedup:.2f}x faster than {first_name} (median)")
+    print(f"🚀 {second_name} is {p99_speedup:.2f}x faster than {first_name} (p99)")
+    print(f"🚀 {second_name} is {total_speedup:.2f}x faster than {first_name} (total time)")
     print("=" * 80 + "\n")
 
 
 @pytest.mark.asyncio
 async def test_benchmark_comparison():
     """Benchmark comparison with config"""
+    # Configure which implementations to compare
+    FIRST_IMPL = DenyListPluginRustRs
+    SECOND_IMPL = DenyListPluginRust
+    
     config_path = CONFIG_PATH
+    first_name = FIRST_IMPL.__name__
+    second_name = SECOND_IMPL.__name__
 
     print("\n" + "=" * 80)
-    print("DENY CHECK BENCHMARK - Python vs Rust Comparison")
+    print(f"DENY CHECK BENCHMARK - {first_name} vs {second_name} Comparison")
     print("=" * 80)
     print(f"Config: {config_path}")
     print(f"Warmup Runs: {WARMUP_RUNS}")
@@ -245,44 +252,44 @@ async def test_benchmark_comparison():
 
     config = load_config(config_path)
 
-    # Python benchmark
-    print("\nBenchmarking Python implementation...")
-    py_plugins = create_plugin_instances(config, DenyListPlugin)
-    py_results = await benchmark_plugin(
-        py_plugins,
+    # First implementation benchmark
+    print(f"\nBenchmarking {first_name} implementation...")
+    first_plugins = create_plugin_instances(config, FIRST_IMPL)
+    first_results = await benchmark_plugin(
+        first_plugins,
         config["sample_texts"],
         config,
     )
-    print_summary(py_results, "DenyListPlugin (Python)")
+    print_summary(first_results, first_name)
 
-    # Rust benchmark
-    print("\nBenchmarking Rust implementation...")
-    rust_plugins = create_plugin_instances(config, DenyListPluginRust)
-    rust_results = await benchmark_plugin(
-        rust_plugins,
+    # Second implementation benchmark
+    print(f"\nBenchmarking {second_name} implementation...")
+    second_plugins = create_plugin_instances(config, SECOND_IMPL)
+    second_results = await benchmark_plugin(
+        second_plugins,
         config["sample_texts"],
         config,
         warmup_runs=WARMUP_RUNS,
         benchmark_runs=BENCHMARK_RUNS,
     )
-    print_summary(rust_results, "DenyListPluginRust (Rust)")
+    print_summary(second_results, second_name)
 
     # Comparison
-    print_comparison(py_results, rust_results)
+    print_comparison(first_results, second_results, first_name, second_name)
 
     # Assertions
-    py_mismatches = [
-        c for c in py_results["combinations"] if not c.get("matches_expected", True)
+    first_mismatches = [
+        c for c in first_results["combinations"] if not c.get("matches_expected", True)
     ]
-    rust_mismatches = [
-        c for c in rust_results["combinations"] if not c.get("matches_expected", True)
+    second_mismatches = [
+        c for c in second_results["combinations"] if not c.get("matches_expected", True)
     ]
 
     assert (
-        len(py_mismatches) == 0
-    ), f"Python implementation has {len(py_mismatches)} mismatches"
+        len(first_mismatches) == 0
+    ), f"{first_name} implementation has {len(first_mismatches)} mismatches"
     assert (
-        len(rust_mismatches) == 0
-    ), f"Rust implementation has {len(rust_mismatches)} mismatches"
+        len(second_mismatches) == 0
+    ), f"{second_name} implementation has {len(second_mismatches)} mismatches"
 
 

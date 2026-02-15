@@ -27,16 +27,20 @@ help:
 # help: build b			- Run cargo build
 build b:
 	@echo "Running cargo build..."
-	@cargo build
+	find ~/.cache/uv -name deny_rust* -exec rm -rf \{\} \;
+	find .venv -name deny_rust* -exec rm -rf \{\} \;
 	@uv cache clean deny_rust
+	@cargo build
 	@uv run maturin build --release
 
 
 # help: build-release br	- Run cargo build --release
 build-release br:
 	@echo "Running cargo build --release..."
-	@cargo build --release
+	find ~/.cache/uv -name deny_rust* -exec rm -rf \{\} \;
+	find .venv -name deny_rust* -exec rm -rf \{\} \;
 	@uv cache clean deny_rust
+	@cargo build --release
 	@uv run maturin build --release
 
 # =============================================================================
