@@ -1,6 +1,6 @@
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList};
-use regex::{escape, RegexSet};
+use regex::{RegexSet, escape};
 
 #[pyclass(from_py_object)]
 #[derive(Clone)]

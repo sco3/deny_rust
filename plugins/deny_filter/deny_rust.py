@@ -55,7 +55,6 @@ class DenyListPluginRust(Plugin):
             The result of the plugin's analysis, including whether the prompt can proceed.
         """
         if payload.args:
-            # for key in payload.args:
             if self._deny_list.scan(payload.args):
                 violation = PluginViolation(
                     reason="Prompt not allowed",

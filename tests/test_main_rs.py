@@ -3,13 +3,14 @@
 Pytest conversion of main_rs.py samples.
 """
 
-import pytest
 import deny_rust
-from plugins.deny_filter.deny_rust import DenyListPluginRust
+import pytest
 from mcpgateway.plugins.framework import PluginContext, PluginConfig
 from mcpgateway.plugins.framework.hooks.prompts import PromptHookType
-from mcpgateway.plugins.framework.models import GlobalContext
 from mcpgateway.plugins.framework.hooks.prompts import PromptPrehookPayload
+from mcpgateway.plugins.framework.models import GlobalContext
+
+from plugins.deny_filter.deny_rust import DenyListPluginRust
 
 
 @pytest.fixture
@@ -41,33 +42,19 @@ def deny_plugin():
 
 
 def test_scan_str_with_violation(deny_list):
-    """Test scan_str with text containing a denied word."""
+    """Test scan_str"""
     result = deny_list.scan_str("ok danger")
     assert result
-
-
-def test_scan_str_without_violation(deny_list):
-    """Test scan_str with text not containing denied words."""
     result = deny_list.scan_str("        ok")
     assert not result
 
 
 def test_scan_with_violation(deny_list):
-    """Test scan method with dict containing a denied word."""
+    """Test scan method"""
     result = deny_list.scan({"path": "ok danger"})
     assert result
-
-
-def test_scan_without_violation(deny_list):
-    """Test scan method with dict not containing denied words."""
     result = deny_list.scan({"asdf": "        ok"})
     assert not result
-
-
-def test_scan_repeated_call(deny_list):
-    """Test scan method called multiple times."""
-    result = deny_list.scan({"path": "ok danger"})
-    assert result
 
 
 @pytest.mark.asyncio

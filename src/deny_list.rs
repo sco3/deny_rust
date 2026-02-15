@@ -61,9 +61,6 @@ impl DenyList {
 
     /// scans str and returns true if match found
     pub fn scan_str(&self, txt: &str) -> bool {
-        if self.ac.is_match(txt) {
-            return true;
-        }
-        false
+        self.ac.is_match(txt)
     }
 }

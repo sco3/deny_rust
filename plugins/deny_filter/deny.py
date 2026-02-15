@@ -27,7 +27,6 @@ logging_service = LoggingService()
 logger = logging_service.get_logger(__name__)
 
 
-
 class DenyListConfig(BaseModel):
     """Configuration for deny list plugin.
 
@@ -74,7 +73,7 @@ class DenyListPlugin(Plugin):
                         code="deny",
                         details={},
                     )
-                    logger.warning("Deny word detected in prompt argument '%s'",key)
+                    logger.warning("Deny word detected in prompt argument '%s'", key)
                     return PromptPrehookResult(
                         modified_payload=payload,
                         violation=violation,
