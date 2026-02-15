@@ -26,7 +26,12 @@ from mcpgateway.plugins.framework.models import GlobalContext
 
 WARMUP_RUNS = 3000
 BENCHMARK_RUNS = 10000
-CONFIG_PATH = "data/deny_check_config_20.json"
+CONFIG_FILES = [
+    "data/deny_check_config_20.json",
+    "data/deny_check_config_100.json",
+    "data/deny_check_config_200.json"
+]
+RUNS_PER_CONFIG = 3
 FIRST_IMPL = DenyListPlugin
 SECOND_IMPL = DenyListPluginRust
 
@@ -266,60 +271,155 @@ def print_comparison(first_results: Dict[str, Any], second_results: Dict[str, An
 
 @pytest.mark.asyncio
 async def test_benchmark_comparison():
-    """Benchmark comparison with config"""
+    """Benchmark comparison with config - runs all configs multiple times"""
     
-    config_path = CONFIG_PATH
     first_name = FIRST_IMPL.__name__
     second_name = SECOND_IMPL.__name__
 
     print("\n" + "=" * 80)
     print(f"DENY CHECK BENCHMARK - {first_name} vs {second_name} Comparison")
     print("=" * 80)
-    print(f"Config: {config_path}")
+    print(f"Configs: {len(CONFIG_FILES)} files x {RUNS_PER_CONFIG} runs each")
     print(f"Warmup Runs: {WARMUP_RUNS}")
     print(f"Benchmark Runs: {BENCHMARK_RUNS}")
     print("=" * 80)
 
-    config = load_config(config_path)
+    # Store all results for final summary
+    all_config_results = []
 
-    # First implementation benchmark
-    print(f"\nBenchmarking {first_name} implementation...")
-    first_plugins = create_plugin_instances(config, FIRST_IMPL)
-    first_results = await benchmark_plugin(
-        first_plugins,
-        config["sample_texts"],
-        config,
-    )
-    print_summary(first_results, first_name, config)
-
-    # Second implementation benchmark
-    print(f"\nBenchmarking {second_name} implementation...")
-    second_plugins = create_plugin_instances(config, SECOND_IMPL)
-    second_results = await benchmark_plugin(
-        second_plugins,
-        config["sample_texts"],
-        config,
-        warmup_runs=WARMUP_RUNS,
-        benchmark_runs=BENCHMARK_RUNS,
-    )
-    print_summary(second_results, second_name, config)
-
-    # Comparison
-    print_comparison(first_results, second_results, first_name, second_name, config)
-
-    # Assertions
-    first_mismatches = [
-        c for c in first_results["combinations"] if not c.get("matches_expected", True)
-    ]
-    second_mismatches = [
-        c for c in second_results["combinations"] if not c.get("matches_expected", True)
-    ]
-
-    assert (
-        len(first_mismatches) == 0
-    ), f"{first_name} implementation has {len(first_mismatches)} mismatches"
-    assert (
-        len(second_mismatches) == 0
-    ), f"{second_name} implementation has {len(second_mismatches)} mismatches"
+    for config_path in CONFIG_FILES:
+        # Extract word count from filename (e.g., "20" from "deny_check_config_20.json")
+        import re
+        match = re.search(r'_(\d+)\.json$', config_path)
+        word_count = match.group(1) if match else "unknown"
+        
+        print(f"\n{'='*80}")
+        print(f"CONFIG: {config_path} ({word_count} words)")
+        print(f"{'='*80}")
+        
+        config = load_config(config_path)
+        
+        # Run each config RUNS_PER_CONFIG times
+        config_run_results = []
+        
+        for run_num in range(1, RUNS_PER_CONFIG + 1):
+            print(f"\n--- Run {run_num}/{RUNS_PER_CONFIG} for {word_count} words config ---")
+            
+            # First implementation benchmark
+            print(f"\nBenchmarking {first_name} implementation...")
+            first_plugins = create_plugin_instances(config, FIRST_IMPL)
+            first_results = await benchmark_plugin(
+                first_plugins,
+                config["sample_texts"],
+                config,
+            )
+            
+            # Second implementation benchmark
+            print(f"\nBenchmarking {second_name} implementation...")
+            second_plugins = create_plugin_instances(config, SECOND_IMPL)
+            second_results = await benchmark_plugin(
+                second_plugins,
+                config["sample_texts"],
+                config,
+                warmup_runs=WARMUP_RUNS,
+                benchmark_runs=BENCHMARK_RUNS,
+            )
+            
+            config_run_results.append({
+                'run': run_num,
+                'first_results': first_results,
+                'second_results': second_results
+            })
+        
+        # Store results for this config
+        all_config_results.append({
+            'config_path': config_path,
+            'word_count': word_count,
+            'config': config,
+            'runs': config_run_results
+        })
+    
+    # Print final summary for all configs
+    print("\n" + "=" * 80)
+    print("FINAL SUMMARY - ALL CONFIGURATIONS")
+    print("=" * 80)
+    
+    for config_result in all_config_results:
+        word_count = config_result['word_count']
+        config = config_result['config']
+        runs = config_result['runs']
+        
+        print(f"\n{'='*80}")
+        print(f"Configuration: {word_count} words")
+        print(f"{'='*80}")
+        
+        # Calculate sample text sizes for this config
+        sample_text_sizes = [len(sample["text"]) for sample in config["sample_texts"]]
+        if sample_text_sizes:
+            print(f"Sample Text Sizes: min={min(sample_text_sizes)}, max={max(sample_text_sizes)}, avg={sum(sample_text_sizes)//len(sample_text_sizes)}")
+            print("-" * 80)
+        
+        # Aggregate results across all runs
+        all_first_medians = []
+        all_second_medians = []
+        all_first_p99s = []
+        all_second_p99s = []
+        all_first_totals = []
+        all_second_totals = []
+        
+        for run_data in runs:
+            first_res = run_data['first_results']
+            second_res = run_data['second_results']
+            
+            first_medians = [c["timings"]["median_us"] for c in first_res["combinations"]]
+            second_medians = [c["timings"]["median_us"] for c in second_res["combinations"]]
+            first_p99s = [c["timings"]["p99_us"] for c in first_res["combinations"]]
+            second_p99s = [c["timings"]["p99_us"] for c in second_res["combinations"]]
+            
+            all_first_medians.append(statistics.median(first_medians))
+            all_second_medians.append(statistics.median(second_medians))
+            all_first_p99s.append(statistics.median(first_p99s))
+            all_second_p99s.append(statistics.median(second_p99s))
+            all_first_totals.append(first_res["total_time_us"])
+            all_second_totals.append(second_res["total_time_us"])
+        
+        # Calculate averages
+        avg_first_median = statistics.mean(all_first_medians)
+        avg_second_median = statistics.mean(all_second_medians)
+        avg_first_p99 = statistics.mean(all_first_p99s)
+        avg_second_p99 = statistics.mean(all_second_p99s)
+        avg_first_total = statistics.mean(all_first_totals)
+        avg_second_total = statistics.mean(all_second_totals)
+        
+        median_speedup = avg_first_median / avg_second_median if avg_second_median > 0 else 0
+        p99_speedup = avg_first_p99 / avg_second_p99 if avg_second_p99 > 0 else 0
+        total_speedup = avg_first_total / avg_second_total if avg_second_total > 0 else 0
+        
+        print(f"Runs: {RUNS_PER_CONFIG}")
+        print(f"{'Metric':<20} {first_name:<15} {second_name:<15} {'Speedup':<15}")
+        print("-" * 80)
+        print(f"{'Avg Median':<20} {avg_first_median:>10.2f}μs {avg_second_median:>10.2f}μs {median_speedup:>10.2f}x")
+        print(f"{'Avg P99':<20} {avg_first_p99:>10.2f}μs {avg_second_p99:>10.2f}μs {p99_speedup:>10.2f}x")
+        print(f"{'Avg Total Time':<20} {avg_first_total/1_000_000:>10.6f}s {avg_second_total/1_000_000:>10.6f}s {total_speedup:>10.2f}x")
+        print(f"\n🚀 {second_name} is {median_speedup:.2f}x faster (median, {word_count} words)")
+    
+    print("\n" + "=" * 80)
+    
+    # Assertions - check all runs
+    for config_result in all_config_results:
+        for run_data in config_result['runs']:
+            first_mismatches = [
+                c for c in run_data['first_results']["combinations"] 
+                if not c.get("matches_expected", True)
+            ]
+            second_mismatches = [
+                c for c in run_data['second_results']["combinations"] 
+                if not c.get("matches_expected", True)
+            ]
+            
+            assert len(first_mismatches) == 0, \
+                f"{first_name} implementation has {len(first_mismatches)} mismatches in {config_result['config_path']}"
+            assert len(second_mismatches) == 0, \
+                f"{second_name} implementation has {len(second_mismatches)} mismatches in {config_result['config_path']}"
 
 
