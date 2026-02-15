@@ -21,7 +21,7 @@ from typing import List, Dict, Any, Type, Protocol, runtime_checkable
 
 from plugins.deny_filter.deny import DenyListPlugin
 from plugins.deny_filter.deny_rust import DenyListPluginRust
-#from plugins.deny_filter.deny_rust_rs import DenyListPluginRustRs
+from plugins.deny_filter.deny_rust_rs import DenyListPluginRustRs
 
 from mcpgateway.services.logging_service import LoggingService
 
@@ -42,7 +42,7 @@ CONFIG_FILES = [
 ]
 RUNS_PER_CONFIG = 1
 FIRST_IMPL = DenyListPlugin
-SECOND_IMPL = DenyListPluginRust
+SECOND_IMPL = DenyListPluginRustRs
 
 
 @runtime_checkable

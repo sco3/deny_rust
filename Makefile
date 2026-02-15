@@ -30,7 +30,6 @@ build b:
 	find ~/.cache/uv -name deny_rust* -exec rm -rf \{\} \; || echo "not found"
 	find .venv -name deny_rust* -exec rm -rf \{\} \; || echo "not found"
 	@uv cache clean deny_rust
-	@cargo build
 	@uv run maturin build --release
 
 
@@ -40,7 +39,6 @@ build-release br:
 	find ~/.cache/uv -name deny_rust* -exec rm -rf \{\} \; || echo "not found"
 	find .venv -name deny_rust* -exec rm -rf \{\} \; || echo "not found"
 	@uv cache clean deny_rust
-	@cargo build --release
 	@uv run maturin build --release
 
 # =============================================================================
