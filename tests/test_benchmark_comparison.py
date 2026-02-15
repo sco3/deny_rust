@@ -26,7 +26,7 @@ from mcpgateway.plugins.framework.models import GlobalContext
 
 WARMUP_RUNS = 3000
 BENCHMARK_RUNS = 10000
-CONFIG_PATH = "data/deny_check_config_200.json"
+CONFIG_PATH = "data/deny_check_config_20.json"
 FIRST_IMPL = DenyListPlugin
 SECOND_IMPL = DenyListPluginRust
 
@@ -159,7 +159,7 @@ async def benchmark_plugin(
     return results
 
 
-def print_summary(results: Dict[str, Any], plugin_name: str):
+def print_summary(results: Dict[str, Any], plugin_name: str, config: Dict[str, Any] = None):
     """Print benchmark summary - always visible."""
     all_medians = [c["timings"]["median_us"] for c in results["combinations"]]
     all_p99s = [c["timings"]["p99_us"] for c in results["combinations"]]
@@ -172,9 +172,23 @@ def print_summary(results: Dict[str, Any], plugin_name: str):
     total_tests = len(results["combinations"])
     passed_tests = total_tests - len(mismatches)
 
+    # Calculate total deny words and sample text sizes
+    total_deny_words = 0
+    sample_text_sizes = []
+    if config:
+        for deny_list in config["deny_word_lists"]:
+            total_deny_words += len(deny_list["words"])
+        for sample in config["sample_texts"]:
+            sample_text_sizes.append(len(sample["text"]))
+
     print("\n" + "=" * 80)
     print(f"BENCHMARK RESULTS - {plugin_name}")
     print("=" * 80)
+    if config:
+        print(f"Total Deny Words: {total_deny_words}")
+        if sample_text_sizes:
+            print(f"Sample Text Sizes: min={min(sample_text_sizes)}, max={max(sample_text_sizes)}, avg={sum(sample_text_sizes)//len(sample_text_sizes)}")
+        print("-" * 80)
     print(f"Median:     {statistics.median(all_medians):.2f}μs")
     print(f"P99:        {statistics.median(all_p99s):.2f}μs")
     print(f"Total Time: {total_time_s:.6f}s ({results['total_time_us']:.2f}μs)")
@@ -196,7 +210,7 @@ def print_summary(results: Dict[str, Any], plugin_name: str):
     print("=" * 80)
 
 
-def print_comparison(first_results: Dict[str, Any], second_results: Dict[str, Any], first_name: str, second_name: str):
+def print_comparison(first_results: Dict[str, Any], second_results: Dict[str, Any], first_name: str, second_name: str, config: Dict[str, Any] = None):
     """Print comparison between two implementations - always visible."""
     first_medians = [c["timings"]["median_us"] for c in first_results["combinations"]]
     second_medians = [c["timings"]["median_us"] for c in second_results["combinations"]]
@@ -217,9 +231,23 @@ def print_comparison(first_results: Dict[str, Any], second_results: Dict[str, An
     p99_speedup = first_p99 / second_p99 if second_p99 > 0 else 0
     total_speedup = first_total / second_total if second_total > 0 else 0
 
+    # Calculate total deny words and sample text sizes
+    total_deny_words = 0
+    sample_text_sizes = []
+    if config:
+        for deny_list in config["deny_word_lists"]:
+            total_deny_words += len(deny_list["words"])
+        for sample in config["sample_texts"]:
+            sample_text_sizes.append(len(sample["text"]))
+
     print("\n" + "=" * 80)
     print(f"{first_name} vs {second_name} COMPARISON")
     print("=" * 80)
+    if config:
+        print(f"Total Deny Words: {total_deny_words}")
+        if sample_text_sizes:
+            print(f"Sample Text Sizes: min={min(sample_text_sizes)}, max={max(sample_text_sizes)}, avg={sum(sample_text_sizes)//len(sample_text_sizes)}")
+        print("-" * 80)
     print(f"{'Metric':<20} {first_name:<15} {second_name:<15} {'Speedup':<15}")
     print("-" * 80)
     print(
@@ -262,7 +290,7 @@ async def test_benchmark_comparison():
         config["sample_texts"],
         config,
     )
-    print_summary(first_results, first_name)
+    print_summary(first_results, first_name, config)
 
     # Second implementation benchmark
     print(f"\nBenchmarking {second_name} implementation...")
@@ -274,10 +302,10 @@ async def test_benchmark_comparison():
         warmup_runs=WARMUP_RUNS,
         benchmark_runs=BENCHMARK_RUNS,
     )
-    print_summary(second_results, second_name)
+    print_summary(second_results, second_name, config)
 
     # Comparison
-    print_comparison(first_results, second_results, first_name, second_name)
+    print_comparison(first_results, second_results, first_name, second_name, config)
 
     # Assertions
     first_mismatches = [
