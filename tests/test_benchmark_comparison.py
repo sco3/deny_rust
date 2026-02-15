@@ -22,9 +22,14 @@ from mcpgateway.plugins.framework.hooks.prompts import (
 )
 from mcpgateway.plugins.framework.models import GlobalContext
 
+
+
 WARMUP_RUNS = 3000
 BENCHMARK_RUNS = 10000
-CONFIG_PATH = "data/deny_check_config_20.json"
+CONFIG_PATH = "data/deny_check_config_200.json"
+FIRST_IMPL = DenyListPlugin
+SECOND_IMPL = DenyListPluginRust
+
 
 
 @runtime_checkable
@@ -234,9 +239,6 @@ def print_comparison(first_results: Dict[str, Any], second_results: Dict[str, An
 @pytest.mark.asyncio
 async def test_benchmark_comparison():
     """Benchmark comparison with config"""
-    # Configure which implementations to compare
-    FIRST_IMPL = DenyListPluginRustRs
-    SECOND_IMPL = DenyListPluginRust
     
     config_path = CONFIG_PATH
     first_name = FIRST_IMPL.__name__
