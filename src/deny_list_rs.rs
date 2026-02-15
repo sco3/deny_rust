@@ -1,5 +1,5 @@
 use pyo3::prelude::*;
-use pyo3::types::PyDict;
+use pyo3::types::{PyDict, PyList};
 use regex::{escape, RegexSet};
 
 #[pyclass(from_py_object)]
@@ -24,14 +24,35 @@ impl DenyListRs {
         self.rs.is_match(txt)
     }
 
-    pub fn scan(&self, args: &Bound<'_, PyDict>) -> bool {
-        for value in args.values() {
-            if let Ok(s) = value.extract::<&str>() {
-                if self.rs.is_match(s) {
-                    return true;
+    /// scans str,dict,list and returns true if match found
+    fn scan_any(&self, value: &Bound<'_, PyAny>) -> PyResult<bool> {
+        // 1. Check for String
+        if let Ok(s) = value.extract::<&str>() {
+            if self.rs.is_match(s) {
+                return Ok(true);
+            }
+        }
+        // 2. Check for Dictionary
+        else if let Ok(dict) = value.cast::<PyDict>() {
+            // In the Bound API, downcast returns &Bound<PyDict>
+            for item_value in dict.values() {
+                if self.scan_any(&item_value)? {
+                    return Ok(true);
                 }
             }
         }
-        false
+        // 3. Check for List
+        else if let Ok(list) = value.cast::<PyList>() {
+            for item in list {
+                if self.scan_any(&item)? {
+                    return Ok(true);
+                }
+            }
+        }
+
+        Ok(false)
+    }
+    pub fn scan(&self, args: &Bound<'_, PyDict>) -> bool {
+        self.scan_any(args.as_any()).unwrap_or(false)
     }
 }
