@@ -17,6 +17,13 @@ SHELL := /bin/bash
 .PHONY: help
 help:
 	@grep "^# help:" Makefile | grep -v grep | sed 's/# help: //' | sed 's/# help://'
+	
+.PHONY: clean-cache
+# help: clean-cache		- Clean uv cache for pyo3 module
+clean-cache:
+	find ~/.cache/uv -name deny_rust* -exec rm -rf \{\} \; || echo "not found"
+	find .venv -name deny_rust* -exec rm -rf \{\} \; || echo "not found"
+	@uv cache clean deny_rust
 
 # =============================================================================
 # BUILD
@@ -25,20 +32,14 @@ help:
 .PHONY: build build-release
 
 # help: build b			- Run cargo build
-build b:
+build b: clean-cache
 	@echo "Running cargo build..."
-	find ~/.cache/uv -name deny_rust* -exec rm -rf \{\} \; || echo "not found"
-	find .venv -name deny_rust* -exec rm -rf \{\} \; || echo "not found"
-	@uv cache clean deny_rust
 	@uv run maturin build --release
 
 
 # help: build-release br	- Run cargo build --release
-build-release br:
+build-release br: clean-cache
 	@echo "Running cargo build --release..."
-	find ~/.cache/uv -name deny_rust* -exec rm -rf \{\} \; || echo "not found"
-	find .venv -name deny_rust* -exec rm -rf \{\} \; || echo "not found"
-	@uv cache clean deny_rust
 	@uv run maturin build --release
 
 # =============================================================================

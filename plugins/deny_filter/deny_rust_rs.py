@@ -41,9 +41,6 @@ class DenyListPluginRustRs(Plugin):
         """
         super().__init__(config)
         self._dconfig = DenyListConfig.model_validate(self._config.config)
-        # self._deny_list = []
-        # for word in self._dconfig.words:
-        #    self._deny_list.append(word)
         self._deny_list = deny_rust.DenyListRs(self._dconfig.words)
 
     async def prompt_pre_fetch(
