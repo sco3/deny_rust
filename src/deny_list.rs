@@ -1,4 +1,4 @@
-use aho_corasick::AhoCorasick;
+use aho_corasick::{AhoCorasick, MatchKind};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::pyclass;
@@ -14,8 +14,11 @@ pub struct DenyList {
 impl DenyList {
     #[new]
     fn new(words: Vec<String>) -> PyResult<Self> {
-        let ac = AhoCorasick::new(words)
+        let ac = AhoCorasick::builder()
+            .match_kind(MatchKind::LeftmostLongest) // или LeftmostFirst
+            .build(words)
             .map_err(|e| PyValueError::new_err(format!("Invalid patterns: {}", e)))?;
+        
         Ok(Self { ac })
     }
 
