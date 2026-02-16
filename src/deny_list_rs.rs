@@ -1,5 +1,7 @@
+use crate::matcher::Matcher;
+use crate::scan_any;
 use pyo3::prelude::*;
-use pyo3::types::{PyDict, PyList};
+use pyo3::types::PyDict;
 use regex::{RegexSet, escape};
 
 #[pyclass(from_py_object)]
@@ -8,10 +10,33 @@ pub struct DenyListRs {
     rs: RegexSet,
 }
 
+impl Matcher for DenyListRs {
+    /// implements matching with regex set
+    fn is_match(&self, s: &str) -> bool {
+        self.rs.is_match(s)
+    }
+
+    /// scans single level dictionary like in existing plugion
+    fn scan(&self, args: &Bound<'_, PyDict>) -> bool {
+        scan_any::scan(self, args)
+    }
+
+    ///scans string and gives true on found denied words
+    fn scan_str(&self, txt: &str) -> bool {
+        self.rs.is_match(txt)
+    }
+
+    /// scans str,dict,list and returns true if match found
+    fn scan_any(&self, value: &Bound<'_, PyAny>) -> PyResult<bool> {
+        scan_any::scan_any(self, value)
+    }
+
+}
+
 #[pymethods]
 impl DenyListRs {
     #[new]
-    fn new(words: Vec<String>) -> PyResult<Self> {
+    pub fn new(words: Vec<String>) -> PyResult<Self> {
         let patterns: Vec<String> = words.into_iter().map(|w| escape(&w)).collect();
 
         let rs = RegexSet::new(patterns)
@@ -20,39 +45,4 @@ impl DenyListRs {
         Ok(Self { rs })
     }
 
-    pub fn scan_str(&self, txt: &str) -> bool {
-        self.rs.is_match(txt)
-    }
-
-    /// scans str,dict,list and returns true if match found
-    fn scan_any(&self, value: &Bound<'_, PyAny>) -> PyResult<bool> {
-        // 1. Check for String
-        if let Ok(s) = value.extract::<&str>() {
-            if self.rs.is_match(s) {
-                return Ok(true);
-            }
-        }
-        // 2. Check for Dictionary
-        else if let Ok(dict) = value.cast::<PyDict>() {
-            // In the Bound API, downcast returns &Bound<PyDict>
-            for item_value in dict.values() {
-                if self.scan_any(&item_value)? {
-                    return Ok(true);
-                }
-            }
-        }
-        // 3. Check for List
-        else if let Ok(list) = value.cast::<PyList>() {
-            for item in list {
-                if self.scan_any(&item)? {
-                    return Ok(true);
-                }
-            }
-        }
-
-        Ok(false)
-    }
-    pub fn scan(&self, args: &Bound<'_, PyDict>) -> bool {
-        self.scan_any(args.as_any()).unwrap_or(false)
-    }
 }

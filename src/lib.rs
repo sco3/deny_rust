@@ -1,8 +1,10 @@
 pub mod deny_list;
 pub mod deny_list_rs;
+pub mod matcher;
+pub mod scan_any;
 
-use crate::deny_list::DenyList;
-use crate::deny_list_rs::DenyListRs;
+pub use crate::deny_list::DenyList;
+pub use crate::deny_list_rs::DenyListRs;
 
 use pyo3::prelude::*;
 

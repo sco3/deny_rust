@@ -6,7 +6,7 @@ license = "Apache-2.0"
 
 [lib]
 name = "deny_rust"
-crate-type = ["cdylib"]
+crate-type = ["cdylib","rlib"]
 
 [dependencies]
 aho-corasick = "1.1.4"
