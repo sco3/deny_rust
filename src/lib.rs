@@ -1,15 +1,14 @@
-pub mod deny_list_config;
-pub mod deny_list_plugin;
+pub mod deny_list;
+pub mod deny_list_rs;
 
-use crate::deny_list_config::DenyListConfig;
-use crate::deny_list_plugin::{DenyListPlugin, PluginResult, PluginViolation};
+use crate::deny_list::DenyList;
+use crate::deny_list_rs::DenyListRs;
+
 use pyo3::prelude::*;
 
 #[pymodule]
 fn deny_rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
-    m.add_class::<DenyListPlugin>()?;
-    m.add_class::<DenyListConfig>()?;
-    m.add_class::<PluginResult>()?;
-    m.add_class::<PluginViolation>()?;
+    m.add_class::<DenyList>()?;
+    m.add_class::<DenyListRs>()?;
     Ok(())
 }

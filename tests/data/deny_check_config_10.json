@@ -1,0 +1,24 @@
+{
+  "deny_word_lists": [
+    {
+      "name": "random_words_10",
+      "words": [
+        "abracadabra",
+        "hocuspocus",
+        "voila"
+      ]
+    }
+  ],
+  "sample_texts": [
+    {
+      "name": "random_text_43",
+      "text": "The morning sun rose over the distant mountains.",
+      "should_block": false
+    },
+    {
+      "name": "random_text_block_43",
+      "text": "The morning sun rose over the distant mountains. voila.",
+      "should_block": true
+    }
+  ]
+}

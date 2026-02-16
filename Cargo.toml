@@ -11,4 +11,10 @@ crate-type = ["cdylib"]
 [dependencies]
 aho-corasick = "1.1.4"
 pyo3 = "0.28.0"
-tracing = "0.1.44"
+regex = "1.12.3"
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
+opt-level = 3
+panic = "abort"
