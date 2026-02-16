@@ -29,17 +29,20 @@ impl DenyList {
         let ac = AhoCorasick::builder()
             .match_kind(MatchKind::LeftmostFirst)
             .build(words)
-            .map_err(|e| build_error(e))?;
+            .map_err(build_error)?;
 
         Ok(Self { ac })
     }
 
+    #[must_use] 
     pub fn is_match(&self, s: &str) -> bool {
         Matcher::is_match(self, s)
     }
+    #[must_use] 
     pub fn scan_str(&self, txt: &str) -> bool {
         Matcher::scan_str(self, txt)
     }
+    #[must_use] 
     pub fn scan(&self, args: &Bound<'_, PyDict>) -> bool {
         Matcher::scan(self, args)
     }

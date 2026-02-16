@@ -26,16 +26,19 @@ impl DenyListRs {
     pub fn new(words: Vec<String>) -> PyResult<Self> {
         let patterns: Vec<String> = words.into_iter().map(|w| escape(&w)).collect();
 
-        let rs = RegexSet::new(patterns).map_err(|e| build_error(e))?;
+        let rs = RegexSet::new(patterns).map_err(build_error)?;
 
         Ok(Self { rs })
     }
+    #[must_use] 
     pub fn is_match(&self, s: &str) -> bool {
         Matcher::is_match(self, s)
     }
+    #[must_use] 
     pub fn scan_str(&self, txt: &str) -> bool {
         Matcher::scan_str(self, txt)
     }
+    #[must_use] 
     pub fn scan(&self, args: &Bound<'_, PyDict>) -> bool {
         Matcher::scan(self, args)
     }
