@@ -1,5 +1,7 @@
+use crate::build_error::build_error;
+use crate::matcher::Matcher;
 use pyo3::prelude::*;
-use pyo3::types::{PyDict, PyList};
+use pyo3::types::PyDict;
 use regex::{RegexSet, escape};
 
 #[pyclass(from_py_object)]
@@ -8,51 +10,40 @@ pub struct DenyListRs {
     rs: RegexSet,
 }
 
+impl Matcher for DenyListRs {
+    /// implements matching with regex set
+    fn is_match(&self, s: &str) -> bool {
+        self.rs.is_match(s)
+    }
+}
+
 #[pymethods]
 impl DenyListRs {
+    /// constructor
+    /// # Errors
+    /// * regex problems (should not happen with simple match)
     #[new]
-    fn new(words: Vec<String>) -> PyResult<Self> {
+    pub fn new(words: Vec<String>) -> PyResult<Self> {
         let patterns: Vec<String> = words.into_iter().map(|w| escape(&w)).collect();
 
-        let rs = RegexSet::new(patterns)
-            .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
+        let rs = RegexSet::new(patterns).map_err(build_error)?;
 
         Ok(Self { rs })
     }
-
+    #[must_use]
+    pub fn is_match(&self, s: &str) -> bool {
+        Matcher::is_match(self, s)
+    }
+    #[must_use]
     pub fn scan_str(&self, txt: &str) -> bool {
-        self.rs.is_match(txt)
+        Matcher::scan_str(self, txt)
     }
-
-    /// scans str,dict,list and returns true if match found
-    fn scan_any(&self, value: &Bound<'_, PyAny>) -> PyResult<bool> {
-        // 1. Check for String
-        if let Ok(s) = value.extract::<&str>() {
-            if self.rs.is_match(s) {
-                return Ok(true);
-            }
-        }
-        // 2. Check for Dictionary
-        else if let Ok(dict) = value.cast::<PyDict>() {
-            // In the Bound API, downcast returns &Bound<PyDict>
-            for item_value in dict.values() {
-                if self.scan_any(&item_value)? {
-                    return Ok(true);
-                }
-            }
-        }
-        // 3. Check for List
-        else if let Ok(list) = value.cast::<PyList>() {
-            for item in list {
-                if self.scan_any(&item)? {
-                    return Ok(true);
-                }
-            }
-        }
-
-        Ok(false)
-    }
+    #[must_use]
     pub fn scan(&self, args: &Bound<'_, PyDict>) -> bool {
-        self.scan_any(args.as_any()).unwrap_or(false)
+        Matcher::scan(self, args)
+    }
+    #[must_use]
+    pub fn scan_any(&self, value: &Bound<'_, PyAny>) -> bool {
+        Matcher::scan_any(self, value)
     }
 }

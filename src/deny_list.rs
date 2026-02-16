@@ -1,9 +1,10 @@
-use aho_corasick::{AhoCorasick, BuildError, MatchKind};
-use pyo3::exceptions::PyValueError;
+use aho_corasick::{AhoCorasick, MatchKind};
 use pyo3::prelude::*;
 
+use crate::build_error::build_error;
+use crate::matcher::Matcher;
 use pyo3::pyclass;
-use pyo3::types::{PyDict, PyDictMethods, PyList};
+use pyo3::types::PyDict;
 
 #[pyclass(from_py_object)]
 #[derive(Clone)]
@@ -11,56 +12,43 @@ pub struct DenyList {
     pub ac: AhoCorasick,
 }
 
-fn error_words() -> fn(BuildError) -> PyErr {
-    |e| PyValueError::new_err(format!("Invalid patterns: {}", e))
+impl Matcher for DenyList {
+    /// implements match with aho-corasic
+    fn is_match(&self, s: &str) -> bool {
+        self.ac.is_match(s)
+    }
 }
 
 #[pymethods]
 impl DenyList {
+    /// constructor
+    /// # Errors
+    /// * aho-corasic errors (too long patterns)
     #[new]
-    fn new(words: Vec<String>) -> PyResult<Self> {
+    pub fn new(words: Vec<String>) -> PyResult<Self> {
         let ac = AhoCorasick::builder()
             .match_kind(MatchKind::LeftmostFirst)
             .build(words)
-            .map_err(error_words())?;
+            .map_err(build_error)?;
 
         Ok(Self { ac })
     }
 
-    /// scans str,dict,list and returns true if match found
-    fn scan_any(&self, value: &Bound<'_, PyAny>) -> PyResult<bool> {
-        // 1. Check for String
-        if let Ok(s) = value.extract::<&str>() {
-            if self.ac.is_match(s) {
-                return Ok(true);
-            }
-        }
-        // 2. Check for Dictionary
-        else if let Ok(dict) = value.cast::<PyDict>() {
-            // In the Bound API, downcast returns &Bound<PyDict>
-            for item_value in dict.values() {
-                if self.scan_any(&item_value)? {
-                    return Ok(true);
-                }
-            }
-        }
-        // 3. Check for List
-        else if let Ok(list) = value.cast::<PyList>() {
-            for item in list {
-                if self.scan_any(&item)? {
-                    return Ok(true);
-                }
-            }
-        }
-
-        Ok(false)
+    #[must_use]
+    pub fn is_match(&self, s: &str) -> bool {
+        Matcher::is_match(self, s)
     }
-    pub fn scan(&self, args: &Bound<'_, PyDict>) -> bool {
-        self.scan_any(args.as_any()).unwrap_or(false)
-    }
-
-    /// scans str and returns true if match found
+    #[must_use]
     pub fn scan_str(&self, txt: &str) -> bool {
-        self.ac.is_match(txt)
+        Matcher::scan_str(self, txt)
+    }
+    #[must_use]
+    pub fn scan(&self, args: &Bound<'_, PyDict>) -> bool {
+        Matcher::scan(self, args)
+    }
+    /// scans dict,str,list
+    #[must_use]
+    pub fn scan_any(&self, value: &Bound<'_, PyAny>) -> bool {
+        Matcher::scan_any(self, value)
     }
 }
