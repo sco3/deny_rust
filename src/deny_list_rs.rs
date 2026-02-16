@@ -18,6 +18,9 @@ impl Matcher for DenyListRs {
 
 #[pymethods]
 impl DenyListRs {
+    /// constructor
+    /// # Errors
+    /// * regex problems (should not happen with simple match)
     #[new]
     pub fn new(words: Vec<String>) -> PyResult<Self> {
         let patterns: Vec<String> = words.into_iter().map(|w| escape(&w)).collect();

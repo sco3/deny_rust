@@ -13,7 +13,7 @@ pub struct DenyList {
 }
 
 fn error_words() -> fn(BuildError) -> PyErr {
-    |e| PyValueError::new_err(format!("Invalid patterns: {}", e))
+    |e| PyValueError::new_err(format!("Invalid patterns: {e}"))
 }
 
 impl Matcher for DenyList {
@@ -25,6 +25,9 @@ impl Matcher for DenyList {
 
 #[pymethods]
 impl DenyList {
+    /// constructor
+    /// # Errors
+    /// * aho-corasic errors (too long patterns)
     #[new]
     pub fn new(words: Vec<String>) -> PyResult<Self> {
         let ac = AhoCorasick::builder()

@@ -12,16 +12,18 @@ pub trait Matcher {
     /// Shared logic: Scans single level dictionary
     fn scan(&self, args: &Bound<'_, PyDict>) -> bool {
         for value in args.values() {
-            if let Ok(value_str) = value.extract::<&str>() {
-                if self.is_match(value_str) {
-                    return true;
-                }
+            if let Ok(value_str) = value.extract::<&str>()
+                && self.is_match(value_str)
+            {
+                return true;
             }
         }
         false
     }
 
     /// Shared logic: The recursive engine for any Python object
+    /// # Errors
+    /// * too deep dictionaries, too long patterns probably
     fn scan_any(&self, value: &Bound<'_, PyAny>) -> PyResult<bool> {
         // 1. Check for String
         if let Ok(s) = value.extract::<&str>() {
