@@ -1,5 +1,4 @@
 use crate::matcher::Matcher;
-use crate::scan_any;
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
 use regex::{RegexSet, escape};
@@ -15,22 +14,6 @@ impl Matcher for DenyListRs {
     fn is_match(&self, s: &str) -> bool {
         self.rs.is_match(s)
     }
-
-    /// scans single level dictionary like in existing plugion
-    fn scan(&self, args: &Bound<'_, PyDict>) -> bool {
-        scan_any::scan(self, args)
-    }
-
-    ///scans string and gives true on found denied words
-    fn scan_str(&self, txt: &str) -> bool {
-        self.rs.is_match(txt)
-    }
-
-    /// scans str,dict,list and returns true if match found
-    fn scan_any(&self, value: &Bound<'_, PyAny>) -> PyResult<bool> {
-        scan_any::scan_any(self, value)
-    }
-
 }
 
 #[pymethods]
@@ -44,5 +27,16 @@ impl DenyListRs {
 
         Ok(Self { rs })
     }
-
+    fn is_match(&self, s: &str) -> bool {
+        Matcher::is_match(self, s)
+    }
+    fn scan_str(&self, txt: &str) -> bool {
+        Matcher::scan_str(self, txt)
+    }
+    fn scan(&self, args: &Bound<'_, PyDict>) -> bool {
+        Matcher::scan(self, args)
+    }
+    fn scan_any(&self, value: &Bound<'_, PyAny>) -> PyResult<bool> {
+        Matcher::scan_any(self, value)
+    }
 }

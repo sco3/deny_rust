@@ -42,7 +42,7 @@ CONFIG_FILES = [
 ]
 RUNS_PER_CONFIG = 1
 FIRST_IMPL = DenyListPlugin
-SECOND_IMPL = DenyListPluginRustRs
+SECOND_IMPL = DenyListPluginRust
 
 
 @runtime_checkable

@@ -1,7 +1,7 @@
 use deny_rust::deny_list::DenyList;
 use deny_rust::deny_list_rs::DenyListRs;
 
-//use deny_rust::deny_rust;
+use deny_rust::module::deny_rust as dr;
 use pyo3::PyResult;
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList};
@@ -45,7 +45,7 @@ fn test_deny_lists() -> PyResult<()> {
         common_test_logic(deny_list, py);
         common_test_logic(deny_list_rs, py);
         let module = PyModule::new(py, "modules").unwrap();
-        //deny_rust(&module).unwrap();
+        dr(&module).unwrap();
     });
 
     Ok(())

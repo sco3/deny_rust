@@ -3,7 +3,6 @@ use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
 use crate::matcher::Matcher;
-use crate::scan_any;
 use pyo3::pyclass;
 use pyo3::types::PyDict;
 
@@ -22,20 +21,6 @@ impl Matcher for DenyList {
     fn is_match(&self, s: &str) -> bool {
         self.ac.is_match(s)
     }
-
-    fn scan(&self, args: &Bound<'_, PyDict>) -> bool {
-        scan_any::scan(self, args)
-    }
-
-    /// scans str and returns true if match found
-    fn scan_str(&self, txt: &str) -> bool {
-        self.ac.is_match(txt)
-    }
-
-    /// scans str,dict,list and returns true if match found
-    fn scan_any(&self, value: &Bound<'_, PyAny>) -> PyResult<bool> {
-        scan_any::scan_any(self, value)
-    }
 }
 
 #[pymethods]
@@ -48,5 +33,17 @@ impl DenyList {
             .map_err(error_words())?;
 
         Ok(Self { ac })
+    }
+    fn is_match(&self, s: &str) -> bool {
+        Matcher::is_match(self, s)
+    }
+    fn scan_str(&self, txt: &str) -> bool {
+        Matcher::scan_str(self, txt)
+    }
+    fn scan(&self, args: &Bound<'_, PyDict>) -> bool {
+        Matcher::scan(self, args)
+    }
+    fn scan_any(&self, value: &Bound<'_, PyAny>) -> PyResult<bool> {
+        Matcher::scan_any(self, value)
     }
 }
