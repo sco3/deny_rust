@@ -5,9 +5,9 @@ use deny_rust::deny_list_rs::DenyListRs;
 
 use deny_rust::build_error::build_error;
 use deny_rust::module::deny_rust as dr;
-use pyo3::PyResult;
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList};
+use pyo3::PyResult;
 
 const DENY_WORDS: &[&str] = &["asdf", "jkl"];
 const BLOCK_PROMPT: &str = "111  asdf 222";
@@ -27,8 +27,8 @@ fn common_test_logic<T: deny_rust::matcher::Matcher>(deny_list: &T, py: Python) 
     dict.set_item("user", BLOCK_PROMPT).unwrap();
     assert!(deny_list.scan_str(BLOCK_PROMPT));
     assert!(deny_list.scan(&dict));
-    assert!(deny_list.scan_any(&dict).unwrap());
-    assert!(deny_list.scan_any(&list).unwrap());
+    assert!(deny_list.scan_any(&dict));
+    assert!(deny_list.scan_any(&list));
 
     dict.clear();
     let list_data: Vec<String> = OK_PROMPT
@@ -39,8 +39,8 @@ fn common_test_logic<T: deny_rust::matcher::Matcher>(deny_list: &T, py: Python) 
     dict.set_item("user", OK_PROMPT).unwrap();
     assert!(!deny_list.scan_str(OK_PROMPT));
     assert!(!deny_list.scan(&dict));
-    assert!(!deny_list.scan_any(&dict).unwrap());
-    assert!(!deny_list.scan_any(&list).unwrap());
+    assert!(!deny_list.scan_any(&dict));
+    assert!(!deny_list.scan_any(&list));
 }
 
 #[test]

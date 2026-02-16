@@ -19,7 +19,7 @@ macro_rules! test_matcher_variant {
                 assert!(matcher.scan(&dict));
 
                 let list = pyo3::types::PyList::new(py, vec!["badword"]).unwrap();
-                assert!(matcher.scan_any(list.as_any()).unwrap());
+                assert!(matcher.scan_any(list.as_any()));
             });
         }
     };
