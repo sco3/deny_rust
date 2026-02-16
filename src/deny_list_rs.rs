@@ -42,6 +42,7 @@ impl DenyListRs {
     pub fn scan(&self, args: &Bound<'_, PyDict>) -> bool {
         Matcher::scan(self, args)
     }
+    #[must_use]
     pub fn scan_any(&self, value: &Bound<'_, PyAny>) -> bool {
         Matcher::scan_any(self, value)
     }

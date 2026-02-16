@@ -47,6 +47,7 @@ impl DenyList {
         Matcher::scan(self, args)
     }
     /// scans dict,str,list
+    #[must_use]
     pub fn scan_any(&self, value: &Bound<'_, PyAny>) -> bool {
         Matcher::scan_any(self, value)
     }
