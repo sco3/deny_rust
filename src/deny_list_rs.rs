@@ -1,3 +1,4 @@
+use crate::build_error::build_error;
 use crate::matcher::Matcher;
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
@@ -25,21 +26,20 @@ impl DenyListRs {
     pub fn new(words: Vec<String>) -> PyResult<Self> {
         let patterns: Vec<String> = words.into_iter().map(|w| escape(&w)).collect();
 
-        let rs = RegexSet::new(patterns)
-            .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
+        let rs = RegexSet::new(patterns).map_err(|e| build_error(e))?;
 
         Ok(Self { rs })
     }
-    fn is_match(&self, s: &str) -> bool {
+    pub fn is_match(&self, s: &str) -> bool {
         Matcher::is_match(self, s)
     }
-    fn scan_str(&self, txt: &str) -> bool {
+    pub fn scan_str(&self, txt: &str) -> bool {
         Matcher::scan_str(self, txt)
     }
-    fn scan(&self, args: &Bound<'_, PyDict>) -> bool {
+    pub fn scan(&self, args: &Bound<'_, PyDict>) -> bool {
         Matcher::scan(self, args)
     }
-    fn scan_any(&self, value: &Bound<'_, PyAny>) -> PyResult<bool> {
+    pub fn scan_any(&self, value: &Bound<'_, PyAny>) -> PyResult<bool> {
         Matcher::scan_any(self, value)
     }
 }

@@ -1,6 +1,9 @@
+mod test_py_deny_list;
+
 use deny_rust::deny_list::DenyList;
 use deny_rust::deny_list_rs::DenyListRs;
 
+use deny_rust::build_error::build_error;
 use deny_rust::module::deny_rust as dr;
 use pyo3::PyResult;
 use pyo3::prelude::*;
@@ -56,6 +59,10 @@ fn test_deny_lists() -> PyResult<()> {
         let module = PyModule::new(py, "modules").unwrap();
         dr(&module).unwrap();
     });
+
+    let dummy_error = "mock error";
+    let py_err = build_error(dummy_error);
+    assert!(py_err.to_string().contains("mock error"));
 
     Ok(())
 }
