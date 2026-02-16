@@ -24,29 +24,29 @@ pub trait Matcher {
     /// Shared logic: The recursive engine for any Python object
     /// # Errors
     /// * too deep dictionaries, too long patterns probably
-    fn scan_any(&self, value: &Bound<'_, PyAny>) -> PyResult<bool> {
+    fn scan_any(&self, value: &Bound<'_, PyAny>) -> bool {
         // 1. Check for String
         if let Ok(s) = value.extract::<&str>() {
             if self.is_match(s) {
-                return Ok(true);
+                return true;
             }
         }
         // 2. Check for Dictionary (using downcast for speed)
         else if let Ok(dict) = value.cast::<PyDict>() {
             for item_value in dict.values() {
-                if self.scan_any(&item_value)? {
-                    return Ok(true);
+                if self.scan_any(&item_value) {
+                    return true;
                 }
             }
         }
         // 3. Check for List
         else if let Ok(list) = value.cast::<PyList>() {
             for item in list {
-                if self.scan_any(&item)? {
-                    return Ok(true);
+                if self.scan_any(&item) {
+                    return true;
                 }
             }
         }
-        Ok(false)
+        false
     }
 }
