@@ -5,9 +5,9 @@ use deny_rust::deny_list_rs::DenyListRs;
 
 use deny_rust::build_error::build_error;
 use deny_rust::module::deny_rust as dr;
+use pyo3::PyResult;
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList};
-use pyo3::PyResult;
 
 const DENY_WORDS: &[&str] = &["asdf", "jkl"];
 const BLOCK_PROMPT: &str = "111  asdf 222";
