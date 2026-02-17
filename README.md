@@ -94,22 +94,20 @@ Choose the implementation that best fits your needs:
 
 Once configured, the plugin automatically scans all prompts at the prompt_pre_fetch stage:
 
-```python
-# Prompt without deny words - passes through
+Prompt without deny words - passes through
+```json
 {
 "prompt_id": "test_prompt",
 "args": {"text": "This is a clean message"}
 }
-# ✓ Allowed
 ```
 
-```python
-# Prompt containing deny word - rejected
+Prompt containing deny word - rejected
+```json
 {
 "prompt_id": "test_prompt",
 "args": {"text": "This message contains prohibited content"}
 }
-# ✗ Blocked: "Prompt not allowed (A deny word was found in the prompt)"
 ```
 
 ## Testing
