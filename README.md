@@ -41,9 +41,9 @@ uv run pytest -s -v tests/test_benchmark_comparison.py
 <!-- BENCHMARK_TABLE_START -->
 | Config<br>Size | DenyListPlugin<br>Median | DenyListPluginRustRs<br>Median | Speedup | DenyListPluginRust<br>Median | Speedup |
 | :---------- | :--------------- | :------------------ | :--------- | :------------------ | :--------- |
-| 10          |          13.76μs |           3.66μs |     3.76x |           3.60μs |     3.83x |
-| 100         |         740.78μs |          23.69μs |    31.27x |           9.26μs |    80.00x |
-| 200         |        1680.60μs |          24.83μs |    67.68x |          28.82μs |    58.32x |
+| 10          |          16.59μs |           4.54μs |     3.66x |           3.69μs |     4.50x |
+| 100         |         710.12μs |          23.86μs |    29.76x |          10.14μs |    70.07x |
+| 200         |        1554.92μs |          26.41μs |    58.87x |          36.58μs |    42.51x |
 <!-- BENCHMARK_TABLE_END -->
 
 **Key Findings:**
