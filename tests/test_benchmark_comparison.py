@@ -190,14 +190,14 @@ def print_markdown_table(
     impl_names = [impl.__name__ for impl in impls]
 
     # Build header dynamically: first impl is baseline, others show speedup vs baseline
-    header_parts = ["Config Size"]
+    header_parts = ["Config<br>Size"]
     separator_parts = [":----------"]
     for i, name in enumerate(impl_names):
         if i == 0:
-            header_parts.append(f"{name} Median")
+            header_parts.append(f"{name}<br>Median")
             separator_parts.append(":---------------")
         else:
-            header_parts.append(f"{name} Median")
+            header_parts.append(f"{name}<br>Median")
             header_parts.append("Speedup")
             separator_parts.append(":------------------")
             separator_parts.append(":---------")
@@ -361,15 +361,17 @@ async def test_benchmark_comparison():
             name: statistics.mean(vals) for name, vals in all_impl_totals.items()
         }
 
-        # Calculate dynamic column widths based on header and value widths
-        # Header width for each impl column: max(len(name), width of formatted values)
-        # Value formats: "{avg_medians[name]:>10.2f}μs" (12 chars), "{avg_p99s[name]:>10.2f}μs" (12 chars), "{avg_totals[name]/1_000_000:>10.6f}s" (11 chars)
+        # Calculate dynamic column widths based on actual formatted value widths
         metric_col_width = 20  # Width for the "Metric" column
         impl_col_widths = []
         for name in impl_names:
-            # Value width: max of header name length and formatted value width (12 chars for median/p99, 11 for total)
-            value_width = max(len(name), 12)
-            impl_col_widths.append(value_width)
+            # Compute sample formatted strings to determine actual width needed
+            formatted_median = f"{avg_medians[name]:.2f}μs"
+            formatted_p99 = f"{avg_p99s[name]:.2f}μs"
+            formatted_total = f"{avg_totals[name]/1_000_000:.6f}s"
+            impl_col_widths.append(
+                max(len(name), len(formatted_median), len(formatted_p99), len(formatted_total))
+            )
 
         # Print comparison table
         print(f"Runs: {RUNS_PER_CONFIG}")
@@ -377,6 +379,7 @@ async def test_benchmark_comparison():
         for i, name in enumerate(impl_names):
             header += f" {name:<{impl_col_widths[i]}}"
         print(header)
+        # separator_width = metric_col_width + sum of impl column widths + spaces between columns (1 space before each impl column)
         separator_width = metric_col_width + sum(impl_col_widths) + len(impl_names)
         print("-" * separator_width)
 

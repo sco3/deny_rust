@@ -39,17 +39,16 @@ uv run pytest -s -v tests/test_benchmark_comparison.py
 > The Markdown table output will be printed to stdout.
 
 <!-- BENCHMARK_TABLE_START -->
-| Config Size | DenyListPlugin Median | DenyListPluginRustRs | Speedup | DenyListPluginRust | Speedup |
+| Config<br>Size | DenyListPlugin<br>Median | DenyListPluginRustRs<br>Median | Speedup | DenyListPluginRust<br>Median | Speedup |
 | :---------- | :--------------- | :------------------ | :--------- | :------------------ | :--------- |
-| 10          |           7.65μs |           2.04μs |     3.74x |           1.98μs |     3.86x |
-| 100         |         554.44μs |          16.07μs |    34.50x |           5.15μs |   107.66x |
-| 200         |        1226.32μs |          16.90μs |    72.56x |          18.20μs |    67.36x |
-<!-- BENCHMARK_TABLE_END -->
+| 10          |           7.48μs |           2.01μs |     3.72x |           1.97μs |     3.79x |
+| 100         |         553.92μs |          16.06μs |    34.48x |           5.37μs |   103.25x |
+| 200         |        1226.79μs |          16.89μs |    72.63x |          18.60μs |    65.96x |<!-- BENCHMARK_TABLE_END -->
 
 **Key Findings:**
 - Both Rust implementations are consistently faster across all configuration sizes
-- DenyListPluginRust **aho-corasick** excels with medium-sized lists
-- DenyListPluginRustRs **regex crate (RegexSet)** shows more consistent scaling
+- DenyListPluginRust with **aho-corasick** excels with medium-sized lists
+- DenyListPluginRustRs with **regex crate (RegexSet)** shows more consistent scaling
 - For high-throughput applications, the Rust implementation can reduce latency by an order of magnitude
 
 ## Prerequisites
