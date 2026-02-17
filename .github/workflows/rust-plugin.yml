@@ -29,20 +29,25 @@ jobs:
       - name: Rust Cache
         uses: swatinem/rust-cache@v2
 
-      - name: Format & Check & Clippy
-        run: |
-          cargo fmt --check
-          cargo check
-          cargo clippy --all-targets -- -W clippy::pedantic -D warnings
+      - name: Format --check
+        run: cargo fmt --check
+
+      - name: Cargo check
+        run: cargo check
+
+      - name: Clippy
+        run: cargo clippy --all-targets -- -W clippy::pedantic -D warnings
 
       - name: Run tests & Coverage
         uses: taiki-e/install-action@cargo-llvm-cov
-      - run: |
+      - name: Generate Coverage Summary
+        run: |
           echo "### Code Coverage Summary" >> $GITHUB_STEP_SUMMARY
           echo '```text' >> $GITHUB_STEP_SUMMARY
           cargo llvm-cov --summary-only >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-          cargo llvm-cov --fail-under-lines 90 > /dev/null
+      - name: Enforce Coverage Threshold
+        run: cargo llvm-cov --fail-under-lines 90
 
   licenses-audit:
     name: Licenses Audit

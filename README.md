@@ -32,6 +32,12 @@ uv run pytest -s -v tests/test_benchmark_comparison.py
 
 ### Performance Comparison
 
+> **Note:** To regenerate this benchmark table, run:
+> ```bash
+> uv run pytest -s -v tests/test_benchmark_comparison.py
+> ```
+> The Markdown table output will be printed to stdout. Copy the "MARKDOWN TABLE OUTPUT" section to update this table.
+
 | Config Size | DenyListPlugin Median | DenyListPluginRustRs | Speedup | DenyListPluginRust | Speedup |
 | :---------- | :--------------- | :------------------ | :--------- | :------------------ | :--------- |
 | 10          |           7.65μs |           2.04μs |     3.74x |           1.98μs |     3.86x |
@@ -65,21 +71,64 @@ uv run pytest -s -v
 
 ## Usage
 
-Once configured, the plugin automatically scans all prompts at the prompt_pre_fetch stage:
+### Gateway Configuration
 
-Prompt without deny words - passes through
+Add the plugin to your MCP Gateway configuration with a deny word list:
+
+```yaml
+# In your gateway config block
+plugins:
+  - name: deny_filter
+    plugin: plugins.deny_filter.deny_rust_rs.DenyListPluginRustRs
+    hooks:
+      - prompt_pre_fetch
+    priority: 100
+    config:
+      words:
+        - spam
+        - scam
+        - phishing
+```
+
+Or with multiple deny word lists:
+
+```yaml
+plugins:
+  - name: deny_filter_main
+    plugin: plugins.deny_filter.deny_rust_rs.DenyListPluginRustRs
+    hooks:
+      - prompt_pre_fetch
+    priority: 100
+    config:
+      words:
+        - prohibited_word_1
+        - prohibited_word_2
+```
+
+Enable the plugin for a specific route:
+
+```yaml
+routes:
+  - path: /chat
+    plugins:
+      - deny_filter_main
+```
+
+### Example Payloads
+
+Prompt without deny words - passes through:
 ```json
 {
-"prompt_id": "test_prompt",
-"args": {"text": "This is a clean message"}
+  "prompt_id": "test_prompt",
+  "args": {"text": "This is a clean message"}
 }
 ```
 
-Prompt containing deny word - rejected
+Prompt containing deny word - rejected:
 ```json
 {
-"prompt_id": "test_prompt",
-"args": {"text": "This message contains prohibited content"}
+  "prompt_id": "test_prompt",
+  "args": {"text": "This message contains prohibited content"}
 }
 ```
 

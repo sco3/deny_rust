@@ -177,61 +177,6 @@ async def benchmark_plugin(
     return results
 
 
-def print_summary(
-    results: Dict[str, Any], plugin_name: str, config: Dict[str, Any] = None
-):
-    """Print benchmark summary - always visible."""
-    all_medians = [c["timings"]["median_us"] for c in results["combinations"]]
-    all_p99s = [c["timings"]["p99_us"] for c in results["combinations"]]
-
-    total_time_s = results["total_time_us"] / 1_000_000
-
-    mismatches = [
-        c for c in results["combinations"] if not c.get("matches_expected", True)
-    ]
-    total_tests = len(results["combinations"])
-    passed_tests = total_tests - len(mismatches)
-
-    # Calculate total deny words and sample text sizes
-    total_deny_words = 0
-    sample_text_sizes = []
-    if config:
-        for deny_list in config["deny_word_lists"]:
-            total_deny_words += len(deny_list["words"])
-        for sample in config["sample_texts"]:
-            sample_text_sizes.append(len(sample["text"]))
-
-    print("\n" + "=" * 80)
-    print(f"BENCHMARK RESULTS - {plugin_name}")
-    print("=" * 80)
-    if config:
-        print(f"Total Deny Words: {total_deny_words}")
-        if sample_text_sizes:
-            print(
-                f"Sample Text Sizes: min={min(sample_text_sizes)}, max={max(sample_text_sizes)}, avg={sum(sample_text_sizes) // len(sample_text_sizes)}"
-            )
-        print("-" * 80)
-    print(f"Median:     {statistics.median(all_medians):.2f}μs")
-    print(f"P99:        {statistics.median(all_p99s):.2f}μs")
-    print(f"Total Time: {total_time_s:.6f}s ({results['total_time_us']:.2f}μs)")
-    print("=" * 80)
-    print(f"\nTest Results: {passed_tests}/{total_tests} passed")
-
-    if mismatches:
-        print("\n" + "=" * 80)
-        print("MISMATCHES DETECTED")
-        print("=" * 80)
-        for mismatch in mismatches:
-            print(f"\nPlugin: {mismatch['plugin_name']}")
-            print(f"Sample: {mismatch['sample_name']}")
-            print(f"Expected Block: {mismatch['expected_block']}")
-            print(f"Actual Blocked: {mismatch['actual_blocked']}")
-            print("-" * 40)
-    else:
-        print("\n✓ All tests passed - actual behavior matches expected!")
-    print("=" * 80)
-
-
 def print_markdown_table(
     all_config_results: List[Dict[str, Any]],
     impls: List[Type[Plugin]],
