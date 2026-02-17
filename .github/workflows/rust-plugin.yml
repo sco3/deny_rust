@@ -122,7 +122,7 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
 
       - name: Build Rust extension
-        run: uv run maturin develop
+        run: uv run maturin develop --release
 
       - name: Install dependencies
         run: uv sync --frozen
