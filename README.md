@@ -148,8 +148,9 @@ uv run pytest tests/test_benchmark_comparison.py -s -v
 ### Python Bindings
 
 The Rust code is exposed to Python using PyO3, providing:
-- Zero-copy data access where possible
-- Async/await support
+- Efficient string matching via Aho-Corasick and Regex engines
+- Standard PyO3 type conversions (Python strings converted to Rust `&str`)
+- Synchronous Rust functions callable from async Python code
 - Pythonic error handling
 - Type safety across the boundary
 
