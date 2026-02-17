@@ -5,18 +5,34 @@ use deny_rust::deny_list_rs::DenyListRs;
 
 use deny_rust::build_error::build_error;
 use deny_rust::module::deny_rust as dr;
-use pyo3::PyResult;
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList};
+use pyo3::PyResult;
+use rmpv::Value;
 
-const DENY_WORDS: &[&str] = &["asdf", "jkl"];
-const BLOCK_PROMPT: &str = "111  asdf 222";
-const OK_PROMPT: &str = "111 222 333";
+const DENY_WORDS: &[&str] = &[
+    "abracadabra",
+    "hocuspocus",
+    "eureka",
+    "jumbo",
+    "voodoo",
+    "juju",
+    "mojo",
+    "nirvana",
+    "chakra",
+    "voila",
+];
+const BLOCK_PROMPT: &str = "The morning sun rose over the distant mountains casting golden rays across the peaceful valley below. Birds sang their melodious songs from the branches of ancient oak trees that had witnessed countless seasons pass. A gentle breeze carried the sweet fragrance of wildflowers that bloomed in vibrant colors throughout the meadow. The river flowed steadily through the landscape creating a soothing rhythm that calmed the mind and spirit. Travelers walked along the winding path sharing stories of their journeys and adventures in faraway lands. The village marketplace bustled with activity as merchants displayed their finest goods and craftspeople demonstrated their skills. Children played games in the town square while elders sat on wooden benches exchanging wisdom and memories from years gone by. The baker prepared fresh loaves of bread filling the air with an irresistible aroma that drew hungry customers to his shop. Farmers brought their harvest from the fields offering fresh vegetables and fruits that reflected the bounty of the season. The blacksmith hammered metal into useful tools and decorative items that would serve the community for years to come. Musicians gathered in the evening to play traditional tunes that had been passed down through generations. Dancers moved gracefully to the rhythms creating patterns that told stories without words. The library housed countless volumes of knowledge collected over centuries providing resources for scholars and curious minds alike. Teachers guided students through lessons helping them discover new ideas and develop their talents. Artists painted landscapes and portraits capturing the beauty of nature and the essence of human expression. The town hall served as a gathering place where citizens discussed important matters and made decisions that affected everyone. Festivals celebrated the changing seasons bringing people together in joyful celebration and shared gratitude. The night sky revealed countless stars that sparkled like diamonds against the dark canvas above. Astronomers studied the celestial bodies seeking to understand the mysteries of the universe and our place within it. Philosophers pondered questions about existence meaning and the nature of reality itself. Historians recorded events ensuring that future generations would learn from the past and build upon the foundations laid by their ancestors. The community thrived through cooperation mutual respect and a shared commitment to creating a better world for all who called this place home. voila.";
+const OK_PROMPT: &str = "The morning sun rose over the distant mountains casting golden rays across the peaceful valley below. Birds sang their melodious songs from the branches of ancient oak trees that had witnessed countless seasons pass. A gentle breeze carried the sweet fragrance of wildflowers that bloomed in vibrant colors throughout the meadow. The river flowed steadily through the landscape creating a soothing rhythm that calmed the mind and spirit. Travelers walked along the winding path sharing stories of their journeys and adventures in faraway lands. The village marketplace bustled with activity as merchants displayed their finest goods and craftspeople demonstrated their skills. Children played games in the town square while elders sat on wooden benches exchanging wisdom and memories from years gone by. The baker prepared fresh loaves of bread filling the air with an irresistible aroma that drew hungry customers to his shop. Farmers brought their harvest from the fields offering fresh vegetables and fruits that reflected the bounty of the season. The blacksmith hammered metal into useful tools and decorative items that would serve the community for years to come. Musicians gathered in the evening to play traditional tunes that had been passed down through generations. Dancers moved gracefully to the rhythms creating patterns that told stories without words. The library housed countless volumes of knowledge collected over centuries providing resources for scholars and curious minds alike. Teachers guided students through lessons helping them discover new ideas and develop their talents. Artists painted landscapes and portraits capturing the beauty of nature and the essence of human expression. The town hall served as a gathering place where citizens discussed important matters and made decisions that affected everyone. Festivals celebrated the changing seasons bringing people together in joyful celebration and shared gratitude. The night sky revealed countless stars that sparkled like diamonds against the dark canvas above. Astronomers studied the celestial bodies seeking to understand the mysteries of the universe and our place within it. Philosophers pondered questions about existence meaning and the nature of reality itself. Historians recorded events ensuring that future generations would learn from the past and build upon the foundations laid by their ancestors. The community thrived through cooperation mutual respect and a shared commitment to creating a better world for all who called this place home.";
 
 fn common_test_logic<T: deny_rust::matcher::Matcher>(deny_list: &T, py: Python) {
-    assert!(deny_list.is_match("111  asdf  222"));
-    assert!(deny_list.is_match("111  asdf  222 jkl"));
+    assert!(deny_list.is_match("111 voila  222"));
+    assert!(deny_list.is_match("111 chakra 222 voila"));
     assert!(!deny_list.is_match("111 222"));
+    let map = Value::Map(vec![
+        (Value::from("id"), Value::from(1)),
+        (Value::from("user"), Value::from(OK_PROMPT)),
+    ]);
 
     // test blocked prompts
 
@@ -63,12 +79,14 @@ fn test_deny_lists() -> PyResult<()> {
         .map(std::string::ToString::to_string)
         .collect();
     let deny_list = DenyList::new(words.clone())?;
-    let deny_list_rs = DenyListRs::new(words)?;
+    let deny_list_rs = DenyListRs::new(words.clone())?;
 
     Python::initialize();
     Python::attach(|py| {
         common_test_logic(&deny_list, py);
         common_test_logic(&deny_list_rs, py);
+
+        // test py module
         let module = PyModule::new(py, "modules").unwrap();
         dr(&module).unwrap();
     });
