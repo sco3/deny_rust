@@ -4,11 +4,13 @@ Pytest-based benchmark comparison between Python and Rust deny list implementati
 This test always displays detailed output regardless of pytest flags.
 """
 
-import asyncio
 import json
-import pytest
-import statistics
 import logging
+import statistics
+from pathlib import Path
+from typing import List, Dict, Any, Type, Protocol, runtime_checkable
+
+import pytest
 from mcpgateway.plugins.framework import PluginConfig, Plugin, PluginContext
 from mcpgateway.plugins.framework.hooks.prompts import (
     PromptHookType,
@@ -16,21 +18,17 @@ from mcpgateway.plugins.framework.hooks.prompts import (
     PromptPrehookResult,
 )
 from mcpgateway.plugins.framework.models import GlobalContext
-from pathlib import Path
-from typing import List, Dict, Any, Type, Protocol, runtime_checkable
+from mcpgateway.services.logging_service import LoggingService
 
 from plugins.deny_filter.deny import DenyListPlugin
 from plugins.deny_filter.deny_rust import DenyListPluginRust
 from plugins.deny_filter.deny_rust_rs import DenyListPluginRustRs
-
-from mcpgateway.services.logging_service import LoggingService
 
 # Initialize logging service first
 loggingSvc = LoggingService()
 loggingSvc.get_logger("plugins.deny_filter.deny").setLevel(logging.ERROR)
 loggingSvc.get_logger("plugins.deny_filter.deny_rust").setLevel(logging.ERROR)
 loggingSvc.get_logger("plugins.deny_filter.deny_rust_rs").setLevel(logging.ERROR)
-
 
 WARMUP_RUNS = 3000
 BENCHMARK_RUNS = 10000
@@ -42,12 +40,13 @@ CONFIG_FILES = [
 RUNS_PER_CONFIG = 1
 ALL_IMPLS = [DenyListPlugin, DenyListPluginRustRs, DenyListPluginRust]
 
+
 @runtime_checkable
 class PromptPreFetchPlugin(Protocol):
     """Protocol for plugins that implement prompt_pre_fetch hook."""
 
     async def prompt_pre_fetch(
-        self, payload: PromptPrehookPayload, context: PluginContext
+            self, payload: PromptPrehookPayload, context: PluginContext
     ) -> PromptPrehookResult:
         """The plugin hook run before a prompt is retrieved and rendered."""
         ...
@@ -64,7 +63,7 @@ def load_config(config_path: str) -> Dict[str, Any]:
 
 
 def create_plugin_instances(
-    config: Dict[str, Any], plugin_type: Type[Plugin]
+        config: Dict[str, Any], plugin_type: Type[Plugin]
 ) -> List[tuple[str, PromptPreFetchPlugin]]:
     """Create plugin instances for each deny word list."""
     plugins = []
@@ -85,11 +84,11 @@ def create_plugin_instances(
 
 
 async def benchmark_plugin(
-    plugins: List[tuple[str, PromptPreFetchPlugin]],
-    sample_texts: List[Dict[str, Any]],
-    config: Dict[str, Any],
-    warmup_runs: int = WARMUP_RUNS,
-    benchmark_runs: int = BENCHMARK_RUNS,
+        plugins: List[tuple[str, PromptPreFetchPlugin]],
+        sample_texts: List[Dict[str, Any]],
+        config: Dict[str, Any],
+        warmup_runs: int = WARMUP_RUNS,
+        benchmark_runs: int = BENCHMARK_RUNS,
 ) -> Dict[str, Any]:
     """Benchmark prompt_pre_fetch execution for all combinations."""
     import time
@@ -173,9 +172,25 @@ async def benchmark_plugin(
     return results
 
 
+def get_cpu_info() -> str:
+    """Get CPU model information.
+
+    Returns:
+        CPU model string (e.g., 'Intel Core i5-12500' or 'AMD Ryzen 7 5800X').
+    """
+    try:
+        with open("/proc/cpuinfo", "r") as f:
+            for line in f:
+                if line.startswith("model name"):
+                    return line.split(":", 1)[1].strip()
+    except (FileNotFoundError, IOError):
+        pass
+    return "CPU info unavailable"
+
+
 def print_markdown_table(
-    all_config_results: List[Dict[str, Any]],
-    impls: List[Type[Plugin]],
+        all_config_results: List[Dict[str, Any]],
+        impls: List[Type[Plugin]],
 ):
     """Print results in Markdown table format similar to README.
 
@@ -186,7 +201,6 @@ def print_markdown_table(
     print("\n" + "=" * 80)
     print("MARKDOWN TABLE OUTPUT (for README)")
     print("=" * 80)
-
     impl_names = [impl.__name__ for impl in impls]
 
     # Build header dynamically: first impl is baseline, others show speedup vs baseline
@@ -203,6 +217,11 @@ def print_markdown_table(
             separator_parts.append(":---------")
 
     print("\n### Performance Comparison\n")
+
+    # Print CPU info
+    cpu_info = get_cpu_info()
+    print(f"\n**CPU:** {cpu_info}\n")
+
     print("| " + " | ".join(header_parts) + " |")
     print("| " + " | ".join(separator_parts) + " |")
 
@@ -368,7 +387,7 @@ async def test_benchmark_comparison():
             # Compute sample formatted strings to determine actual width needed
             formatted_median = f"{avg_medians[name]:.2f}μs"
             formatted_p99 = f"{avg_p99s[name]:.2f}μs"
-            formatted_total = f"{avg_totals[name]/1_000_000:.6f}s"
+            formatted_total = f"{avg_totals[name] / 1_000_000:.6f}s"
             impl_col_widths.append(
                 max(len(name), len(formatted_median), len(formatted_p99), len(formatted_total))
             )
@@ -439,5 +458,5 @@ async def test_benchmark_comparison():
                 ]
 
                 assert (
-                    len(mismatches) == 0
+                        len(mismatches) == 0
                 ), f"{impl_name} implementation has {len(mismatches)} mismatches in {config_result['config_path']}"
