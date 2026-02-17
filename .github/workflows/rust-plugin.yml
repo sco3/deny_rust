@@ -3,10 +3,8 @@ name: Rust Tools CI/CD
 on:
   push:
     branches: [main]
-    #paths: ["./**", ".github/workflows/rust-plugin.yml"]
   pull_request:
     branches: [main]
-    #paths: ["./**"]
     types: [opened, synchronize, reopened]
   workflow_dispatch:
 
@@ -38,16 +36,17 @@ jobs:
       - name: Clippy
         run: cargo clippy --all-targets -- -W clippy::pedantic -D warnings
 
-      - name: Run tests & Coverage
+      - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
       - name: Generate Coverage Summary
         run: |
+          cargo llvm-cov --summary-only > /tmp/cov-summary.txt
           echo "### Code Coverage Summary" >> $GITHUB_STEP_SUMMARY
           echo '```text' >> $GITHUB_STEP_SUMMARY
-          cargo llvm-cov --summary-only >> $GITHUB_STEP_SUMMARY
+          cat /tmp/cov-summary.txt >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
       - name: Enforce Coverage Threshold
-        run: cargo llvm-cov --fail-under-lines 90
+        run: cargo llvm-cov report --fail-under-lines 90
 
   licenses-audit:
     name: Licenses Audit

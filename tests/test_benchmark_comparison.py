@@ -365,30 +365,41 @@ async def test_benchmark_comparison():
             name: statistics.mean(vals) for name, vals in all_impl_totals.items()
         }
 
+        # Calculate dynamic column widths based on header and value widths
+        # Header width for each impl column: max(len(name), width of formatted values)
+        # Value formats: "{avg_medians[name]:>10.2f}μs" (12 chars), "{avg_p99s[name]:>10.2f}μs" (12 chars), "{avg_totals[name]/1_000_000:>10.6f}s" (11 chars)
+        metric_col_width = 20  # Width for the "Metric" column
+        impl_col_widths = []
+        for name in impl_names:
+            # Value width: max of header name length and formatted value width (12 chars for median/p99, 11 for total)
+            value_width = max(len(name), 12)
+            impl_col_widths.append(value_width)
+
         # Print comparison table
         print(f"Runs: {RUNS_PER_CONFIG}")
-        header = f"{'Metric':<20}"
-        for name in impl_names:
-            header += f" {name:<18}"
+        header = f"{'Metric':<{metric_col_width}}"
+        for i, name in enumerate(impl_names):
+            header += f" {name:<{impl_col_widths[i]}}"
         print(header)
-        print("-" * (20 + 18 * len(impl_names)))
+        separator_width = metric_col_width + sum(impl_col_widths) + len(impl_names)
+        print("-" * separator_width)
 
         # Median row
-        median_row = f"{'Avg Median':<20}"
-        for name in impl_names:
-            median_row += f" {avg_medians[name]:>10.2f}μs"
+        median_row = f"{'Avg Median':<{metric_col_width}}"
+        for i, name in enumerate(impl_names):
+            median_row += f" {avg_medians[name]:>{impl_col_widths[i]}.2f}μs"
         print(median_row)
 
         # P99 row
-        p99_row = f"{'Avg P99':<20}"
-        for name in impl_names:
-            p99_row += f" {avg_p99s[name]:>10.2f}μs"
+        p99_row = f"{'Avg P99':<{metric_col_width}}"
+        for i, name in enumerate(impl_names):
+            p99_row += f" {avg_p99s[name]:>{impl_col_widths[i]}.2f}μs"
         print(p99_row)
 
         # Total Time row
-        total_row = f"{'Avg Total Time':<20}"
-        for name in impl_names:
-            total_row += f" {avg_totals[name] / 1_000_000:>10.6f}s"
+        total_row = f"{'Avg Total Time':<{metric_col_width}}"
+        for i, name in enumerate(impl_names):
+            total_row += f" {avg_totals[name] / 1_000_000:>{impl_col_widths[i]}.6f}s"
         print(total_row)
 
         # Speedup calculations (relative to first implementation - Python)
