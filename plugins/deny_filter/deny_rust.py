@@ -40,7 +40,7 @@ class DenyListPluginRust(Plugin):
         self._deny_list = deny_rust.DenyList(self._dconfig.words)
 
     async def prompt_pre_fetch(
-            self, payload: PromptPrehookPayload, _context: PluginContext
+        self, payload: PromptPrehookPayload, _context: PluginContext
     ) -> PromptPrehookResult:
         """The plugin hook run before a prompt is retrieved and rendered.
 
