@@ -3,9 +3,9 @@ name: Rust Tools CI/CD
 on:
   push:
     branches: [main, develop]
-    paths:
-      - "tools_rust/**"
-      - ".github/workflows/rust-tools.yml"
+    #paths:
+      #- "tools_rust/**"
+      #- ".github/workflows/rust-tools.yml"
   pull_request:
     branches: [main, develop, rust-tools-ci]
     paths:
