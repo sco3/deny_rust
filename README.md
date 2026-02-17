@@ -32,18 +32,16 @@ uv run pytest -s -v tests/test_benchmark_comparison.py
 
 ### Performance Comparison
 
-### Performance Comparison
-
-| Config Size | Python Median    | Rust (aho-corasick) | Speedup    | Rust (regex)     | Speedup    |
-| :---------- | :--------------- | :------------------ | :--------- | :--------------- | :--------- |
-| 10          |           7.50μs |              2.01μs |     3.73x |           2.00μs |     3.74x |
-| 100         |         554.24μs |              5.27μs |   105.27x |          16.07μs |    34.49x |
-| 200         |        1224.51μs |             18.19μs |    67.32x |          17.73μs |    69.04x |
+| Config Size | DenyListPlugin Median | DenyListPluginRustRs | Speedup | DenyListPluginRust | Speedup |
+| :---------- | :--------------- | :------------------ | :--------- | :------------------ | :--------- |
+| 10          |           7.65μs |           2.04μs |     3.74x |           1.98μs |     3.86x |
+| 100         |         554.44μs |          16.07μs |    34.50x |           5.15μs |   107.66x |
+| 200         |        1226.32μs |          16.90μs |    72.56x |          18.20μs |    67.36x |
 
 **Key Findings:**
 - Both Rust implementations are consistently faster across all configuration sizes
-- **aho-corasick** excels with medium-sized lists
-- **regex crate (RegexSet)** shows more consistent scaling
+- DenyListPluginRust **aho-corasick** excels with medium-sized lists
+- DenyListPluginRustRs **regex crate (RegexSet)** shows more consistent scaling
 - For high-throughput applications, the Rust implementation can reduce latency by an order of magnitude
 
 ## Prerequisites

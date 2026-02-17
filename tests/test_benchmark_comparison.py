@@ -234,29 +234,47 @@ def print_summary(
 
 def print_markdown_table(
     all_config_results: List[Dict[str, Any]],
+    impls: List[Type[Plugin]],
 ):
-    """Print results in Markdown table format similar to README."""
+    """Print results in Markdown table format similar to README.
+
+    Args:
+        all_config_results: Aggregated benchmark results per config.
+        impls: List of implementation classes (e.g., ALL_IMPLS). First impl is used as baseline for speedup calculations.
+    """
     print("\n" + "=" * 80)
     print("MARKDOWN TABLE OUTPUT (for README)")
     print("=" * 80)
 
+    impl_names = [impl.__name__ for impl in impls]
+
+    # Build header dynamically: first impl is baseline, others show speedup vs baseline
+    header_parts = ["Config Size"]
+    separator_parts = [":----------"]
+    for i, name in enumerate(impl_names):
+        if i == 0:
+            header_parts.append(f"{name} Median")
+            separator_parts.append(":---------------")
+        else:
+            header_parts.append(f"{name}")
+            header_parts.append("Speedup")
+            separator_parts.append(":------------------")
+            separator_parts.append(":---------")
+
     print("\n### Performance Comparison\n")
-    print("| Config Size | Python Median    | Rust (aho-corasick) | Speedup    | Rust (regex)     | Speedup    |")
-    print("| :---------- | :--------------- | :------------------ | :--------- | :--------------- | :--------- |")
+    print("| " + " | ".join(header_parts) + " |")
+    print("| " + " | ".join(separator_parts) + " |")
 
     for config_result in all_config_results:
         word_count = config_result["word_count"]
         runs = config_result["runs"]
 
-        # Aggregate results across all runs
-        all_impl_medians = {
-            "DenyListPlugin": [],
-            "DenyListPluginRust": [],
-            "DenyListPluginRustRs": [],
-        }
+        # Aggregate results across all runs - dynamic based on impls
+        all_impl_medians = {impl.__name__: [] for impl in impls}
 
         for run_data in runs:
-            for impl_name in all_impl_medians.keys():
+            for impl in impls:
+                impl_name = impl.__name__
                 impl_results = run_data[impl_name]
                 medians = [
                     c["timings"]["median_us"] for c in impl_results["combinations"]
@@ -268,18 +286,22 @@ def print_markdown_table(
             name: statistics.mean(vals) for name, vals in all_impl_medians.items()
         }
 
-        python_median = avg_medians["DenyListPlugin"]
-        aho_corasick_median = avg_medians["DenyListPluginRust"]
-        regex_median = avg_medians["DenyListPluginRustRs"]
+        # First impl is baseline for speedup calculations
+        baseline_median = avg_medians[impl_names[0]]
 
-        aho_speedup = (
-            python_median / aho_corasick_median if aho_corasick_median > 0 else 0
-        )
-        regex_speedup = python_median / regex_median if regex_median > 0 else 0
+        # Build row dynamically
+        row_parts = [f"{word_count:<11}"]
+        for i, name in enumerate(impl_names):
+            if i == 0:
+                row_parts.append(f"{avg_medians[name]:>14.2f}μs")
+            else:
+                speedup = (
+                    baseline_median / avg_medians[name] if avg_medians[name] > 0 else 0
+                )
+                row_parts.append(f"{avg_medians[name]:>14.2f}μs")
+                row_parts.append(f"{speedup:>8.2f}x")
 
-        print(
-            f"| {word_count:<11} | {python_median:>14.2f}μs | {aho_corasick_median:>17.2f}μs | {aho_speedup:>8.2f}x | {regex_median:>14.2f}μs | {regex_speedup:>8.2f}x |"
-        )
+        print("| " + " | ".join(row_parts) + " |")
 
     print("\n" + "=" * 80)
 
@@ -446,7 +468,7 @@ async def test_benchmark_comparison():
             )
 
     # Print Markdown table for README
-    print_markdown_table(all_config_results)
+    print_markdown_table(all_config_results, ALL_IMPLS)
 
     print("\n" + "=" * 80)
 
