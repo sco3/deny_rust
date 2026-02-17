@@ -44,7 +44,7 @@ Modify your configuration or update the deny word lists in test data files:
 ```
 Results:
 
-| Config Size (deny words) | Python Median | Rust Median | Increase |
+| Config Size (deny words) | Python Median | Rust Median | Speedup  |
 | :----------------------- | :------------ | :---------- | :------- |
 | 3                        | 2.27µs        | 1.58µs      | 1.44x    |
 | 20                       | 11.73µs       | 2.07µs      | 5.67x    |
