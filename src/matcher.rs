@@ -1,7 +1,7 @@
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList};
-use rmp::decode::{read_array_len, read_map_len, read_marker, read_str_from_slice};
 use rmp::Marker;
+use rmp::decode::{read_array_len, read_map_len, read_marker, read_str_from_slice};
 use std::io::Cursor;
 
 pub trait Matcher {
@@ -55,6 +55,7 @@ pub trait Matcher {
 
     /// Traverses msgpack bytes recursively, returns true if a violation is found
     fn traverse(&self, cur: &mut Cursor<&[u8]>, full_data: &[u8], check_strings: bool) -> bool {
+        #[allow(clippy::cast_possible_truncation)]
         let pos = cur.position() as usize;
 
         if pos >= full_data.len() {
@@ -69,7 +70,7 @@ pub trait Matcher {
             // str
             Marker::FixStr(_) | Marker::Str8 | Marker::Str16 | Marker::Str32 => {
                 let data_slice = &full_data[pos..];
-                if let Ok((found_str, _tail)) = read_str_from_slice(data_slice) {
+                if let Ok((found_str, tail)) = read_str_from_slice(data_slice) {
                     if check_strings {
                         //let type_name = std::any::type_name::<Self>();
                         //println!("check [{}]: {found_str}", type_name.split("::").last().unwrap_or(type_name));
@@ -79,7 +80,7 @@ pub trait Matcher {
                         }
                     }
                     // Advance cursor by the number of bytes consumed
-                    let bytes_consumed = data_slice.len() - _tail.len();
+                    let bytes_consumed = data_slice.len() - tail.len();
                     cur.set_position((pos + bytes_consumed) as u64);
                 }
             }
