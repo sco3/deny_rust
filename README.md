@@ -32,11 +32,11 @@ uv pytest -s -v tests/test_benchmark_comparison.py
 
 ### Performance Comparison
 
-| Config Size | Python Median | Rust (aho-corasick) | Speedup | Rust (regex) | Speedup |
-| :---------- | :------------ | :------------------ | :------ | :----------- | :------ |
-| 10 words    | 7.51µs        | 1.96µs              | 3.83x   | 2.00µs       | 3.80x   |
-| 100 words   | 553.41µs      | 5.18µs              | 106.84x | 16.09µs      | 34.76x  |
-| 200 words   | 1225.17µs     | 18.12µs             | 67.61x  | 16.85µs      | 72.90x  |
+| Config Size | Python Median | Rust (aho-corasick) | Speedup | Rust (regex) | Speedup  |
+| :---------- | :------------ | :------------------ | :------ | :----------- |:---------|
+| 10 words    | 7.51µs        | 1.96µs              | 3.83x   | 2.00µs       | 3.80x    |
+| 100 words   | 553.41µs      | 5.18µs              | 106.84x | 16.09µs      | 34.39~~~~x |
+| 200 words   | 1225.17µs     | 18.12µs             | 67.61x  | 16.85µs      | 72.90x   |
 
 **Key Findings:**
 - Both Rust implementations are consistently faster across all configuration sizes
