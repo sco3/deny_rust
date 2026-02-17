@@ -40,11 +40,7 @@ CONFIG_FILES = [
     "data/deny_check_config_200.json",
 ]
 RUNS_PER_CONFIG = 1
-FIRST_IMPL = DenyListPlugin
-SECOND_IMPL = DenyListPluginRustRs
-THIRD_IMPL = DenyListPluginRust
-ALL_IMPLS = [FIRST_IMPL, SECOND_IMPL, THIRD_IMPL]
-
+ALL_IMPLS = [DenyListPlugin, DenyListPluginRustRs, DenyListPluginRust]
 
 @runtime_checkable
 class PromptPreFetchPlugin(Protocol):
