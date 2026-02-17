@@ -2,14 +2,10 @@ name: Rust Tools CI/CD
 
 on:
   push:
-    branches: [main, develop]
-    #paths:
-      #- "tools_rust/**"
-      #- ".github/workflows/rust-tools.yml"
+    branches: [main]
   pull_request:
-    branches: [main, develop, rust-tools-ci]
-    #paths:
-      #- "tools_rust/**"
+    branches: [main]
+    types: [opened, synchronize, reopened]
   workflow_dispatch:
 
 env:
@@ -18,83 +14,127 @@ env:
 
 jobs:
   rust-checks:
-    name: Rust Checks (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-
+    name: Rust Checks
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Rust components
-        run: |
-          rustup toolchain install stable
-          rustup component add rustfmt clippy
-          rustup default stable
-
-      - name: Cache Cargo
-        uses: actions/cache@v4
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
         with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-deny_rust-${{ hashFiles('**/Cargo.lock') }}
+          components: rustfmt, clippy, llvm-tools-preview
 
-      - name: Check formatting
-        working-directory: .
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Display Hardware Information
+        run: |
+          echo "## Hardware Information" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### CPU Info" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          lscpu | grep -E "^(Architecture|CPU op-mode|Model name|CPU\(s\)|Thread|Core|Socket|L1d cache|L1i cache|L2 cache|L3 cache)" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Memory Info" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          free -h >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### System Info" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          uname -a >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Disk Space" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          df -h / >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: Rust Cache
+        uses: swatinem/rust-cache@v2
+
+      - name: Format --check
         run: cargo fmt --check
 
-      - name: Run cargo check
-        working-directory: .
+      - name: Cargo check
         run: cargo check
 
-      - name: Run clippy (pedantic)
-        working-directory: .
-        run: cargo clippy
+      - name: Clippy
+        run: cargo clippy --all-targets -- -W clippy::pedantic -D warnings
 
-      - name: Run tests
-        working-directory: .
-        run: cargo test
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+      - name: Generate Coverage Summary
+        run: |
+          cargo llvm-cov --summary-only --no-clean > /tmp/cov-summary.txt
+          echo "### Code Coverage Summary" >> $GITHUB_STEP_SUMMARY
+          echo '```text' >> $GITHUB_STEP_SUMMARY
+          cat /tmp/cov-summary.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+      - name: Enforce Coverage Threshold
+        run: cargo llvm-cov report --fail-under-lines 90
 
-      - name: Build release
-        working-directory: .
-        run: cargo build --release 
+  python-tests:
+    name: Python Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Display Hardware Information
+        run: |
+          echo "## Hardware Information" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### CPU Info" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          lscpu | grep -E "^(Architecture|CPU op-mode|Model name|CPU\(s\)|Thread|Core|Socket|L1d cache|L1i cache|L2 cache|L3 cache)" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Memory Info" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          free -h >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### System Info" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          uname -a >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Disk Space" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          df -h / >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Build Rust extension
+        run: uv run maturin develop --release
+
+      - name: Run pytest
+        run: uv run pytest -v -s >> $GITHUB_STEP_SUMMARY
 
   licenses-audit:
     name: Licenses Audit
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install Rust stable
-        run: rustup default stable
-
       - name: Install cargo-deny
-        run: cargo install cargo-deny
-
-      - name: Run license check
-        working-directory: .
-        run: cargo deny check licenses
-
-  coverage:
-    name: Code Coverage
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Rust stable and components
-        run: |
-          rustup default stable
-          rustup component add llvm-tools-preview
-
-      - name: Install cargo-llvm-cov
-        run: cargo install cargo-llvm-cov
-
-      - name: Run coverage
-        working-directory: tools_rust/wrapper
-        run: cargo llvm-cov --html
+        uses: taiki-e/install-action@cargo-deny
+      - run: cargo deny check licenses
