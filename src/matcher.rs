@@ -1,7 +1,7 @@
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList};
-use rmp::Marker;
 use rmp::decode::{read_array_len, read_map_len, read_marker, read_str_from_slice};
+use rmp::Marker;
 use std::io::Cursor;
 
 pub trait Matcher {
@@ -61,9 +61,8 @@ pub trait Matcher {
             return false;
         }
 
-        let marker = match read_marker(cur) {
-            Ok(m) => m,
-            Err(_) => return false, // difficult to test
+        let Ok(marker) = read_marker(cur) else {
+            return false;
         };
 
         match marker {
