@@ -33,7 +33,7 @@ jobs:
         run: |
           cargo fmt --check
           cargo check
-          cargo clippy -- -D warnings
+          cargo clippy --all-targets -- -W clippy::pedantic -D warnings
 
       - name: Run tests & Coverage
         uses: taiki-e/install-action@cargo-llvm-cov

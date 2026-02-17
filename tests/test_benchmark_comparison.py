@@ -232,34 +232,6 @@ def print_summary(
     print("=" * 80)
 
 
-def print_comparison(
-    first_results: Dict[str, Any],
-    second_results: Dict[str, Any],
-    first_name: str,
-    second_name: str,
-    config: Dict[str, Any] = None,
-):
-    """Print comparison between two implementations - always visible."""
-    first_medians = [c["timings"]["median_us"] for c in first_results["combinations"]]
-    second_medians = [c["timings"]["median_us"] for c in second_results["combinations"]]
-
-    first_p99s = [c["timings"]["p99_us"] for c in first_results["combinations"]]
-    second_p99s = [c["timings"]["p99_us"] for c in second_results["combinations"]]
-
-    first_median = statistics.median(first_medians)
-    second_median = statistics.median(second_medians)
-
-    first_p99 = statistics.median(first_p99s)
-    second_p99 = statistics.median(second_p99s)
-
-    first_total = first_results["total_time_us"]
-    second_total = second_results["total_time_us"]
-
-    median_speedup = first_median / second_median if second_median > 0 else 0
-    p99_speedup = first_p99 / second_p99 if second_p99 > 0 else 0
-    total_speedup = first_total / second_total if second_total > 0 else 0
-
-
 def print_markdown_table(
     all_config_results: List[Dict[str, Any]],
 ):
@@ -310,74 +282,6 @@ def print_markdown_table(
         )
 
     print("\n" + "=" * 80)
-
-
-def print_comparison(
-    first_results: Dict[str, Any],
-    second_results: Dict[str, Any],
-    first_name: str,
-    second_name: str,
-    config: Dict[str, Any] = None,
-):
-    """Print comparison between two implementations - always visible."""
-    first_medians = [c["timings"]["median_us"] for c in first_results["combinations"]]
-    second_medians = [c["timings"]["median_us"] for c in second_results["combinations"]]
-
-    first_p99s = [c["timings"]["p99_us"] for c in first_results["combinations"]]
-    second_p99s = [c["timings"]["p99_us"] for c in second_results["combinations"]]
-
-    first_median = statistics.median(first_medians)
-    second_median = statistics.median(second_medians)
-
-    first_p99 = statistics.median(first_p99s)
-    second_p99 = statistics.median(second_p99s)
-
-    first_total = first_results["total_time_us"]
-    second_total = second_results["total_time_us"]
-
-    median_speedup = first_median / second_median if second_median > 0 else 0
-    p99_speedup = first_p99 / second_p99 if second_p99 > 0 else 0
-    total_speedup = first_total / second_total if second_total > 0 else 0
-
-    # Calculate total deny words and sample text sizes
-    total_deny_words = 0
-    sample_text_sizes = []
-    if config:
-        for deny_list in config["deny_word_lists"]:
-            total_deny_words += len(deny_list["words"])
-        for sample in config["sample_texts"]:
-            sample_text_sizes.append(len(sample["text"]))
-
-    print("\n" + "=" * 80)
-    print(f"{first_name} vs {second_name} COMPARISON")
-    print("=" * 80)
-    if config:
-        print(f"Total Deny Words: {total_deny_words}")
-        if sample_text_sizes:
-            print(
-                f"Sample Text Sizes: min={min(sample_text_sizes)}, max={max(sample_text_sizes)}, avg={sum(sample_text_sizes) // len(sample_text_sizes)}"
-            )
-        print("-" * 80)
-    print(f"{'Metric':<20} {first_name:<15} {second_name:<15} {'Speedup':<15}")
-    print("-" * 80)
-    print(
-        f"{'Median':<20} {first_median:>10.2f}μs {second_median:>10.2f}μs {median_speedup:>10.2f}x"
-    )
-    print(
-        f"{'P99':<20} {first_p99:>10.2f}μs {second_p99:>10.2f}μs {p99_speedup:>10.2f}x"
-    )
-    print(
-        f"{'Total Time':<20} {first_total / 1_000_000:>10.6f}s {second_total / 1_000_000:>10.6f}s {total_speedup:>10.2f}x"
-    )
-    print("=" * 80)
-    print(
-        f"\n🚀 {second_name} is {median_speedup:.2f}x faster than {first_name} (median)"
-    )
-    print(f"🚀 {second_name} is {p99_speedup:.2f}x faster than {first_name} (p99)")
-    print(
-        f"🚀 {second_name} is {total_speedup:.2f}x faster than {first_name} (total time)"
-    )
-    print("=" * 80 + "\n")
 
 
 @pytest.mark.asyncio

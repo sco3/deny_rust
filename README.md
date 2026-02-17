@@ -46,13 +46,13 @@ uv run pytest -s -v tests/test_benchmark_comparison.py
 - **regex crate (RegexSet)** shows more consistent scaling
 - For high-throughput applications, the Rust implementation can reduce latency by an order of magnitude
 
-### Prerequisites
+## Prerequisites
 
 - Python 3.12+
 - Rust toolchain (for building Rust implementation)
 - uv package manager
 
-### Build and Install
+## Build and Install
 
 ```bash
 # Install Python dependencies
