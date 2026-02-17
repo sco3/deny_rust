@@ -32,19 +32,32 @@ uv run pytest -s -v tests/test_benchmark_comparison.py
 
 ### Performance Comparison
 
-> **Note:** The benchmark table below was generated with pytest. To regenerate manually, run:
+> **Note:** The benchmark table below was generated with pytest on . 
+> To regenerate manually, run:
 > ```bash
 > uv run pytest -s -v tests/test_benchmark_comparison.py
 > ```
 > The Markdown table output will be printed to stdout.
+> 
+
+~~~~AMD EPYC 7763 64-Core:
 
 <!-- BENCHMARK_TABLE_START -->
 | Config<br>Size | DenyListPlugin<br>Median | DenyListPluginRustRs<br>Median | Speedup | DenyListPluginRust<br>Median | Speedup |
 | :---------- | :--------------- | :------------------ | :--------- | :------------------ | :--------- |
-| 10          |          16.59μs |           4.54μs |     3.66x |           3.69μs |     4.50x |
-| 100         |         710.12μs |          23.86μs |    29.76x |          10.14μs |    70.07x |
-| 200         |        1554.92μs |          26.41μs |    58.87x |          36.58μs |    42.51x |
+| 10          |          16.39μs |           3.66μs |     4.48x |           3.61μs |     4.54x |
+| 100         |         709.86μs |          25.13μs |    28.25x |          10.00μs |    71.02x |
+| 200         |        1547.06μs |          26.20μs |    59.06x |          36.27μs |    42.66x |
 <!-- BENCHMARK_TABLE_END -->
+
+12th Gen Intel(R) Core(TM) i5-12500H:
+
+| Config<br>Size | DenyListPlugin<br>Median | DenyListPluginRustRs<br>Median | Speedup | DenyListPluginRust<br>Median | Speedup |
+| :---------- | :--------------- | :------------------ | :--------- | :------------------ | :--------- |
+| 10          |           7.60μs |           2.01μs |     3.78x |           1.96μs |     3.87x |
+| 100         |         555.88μs |          16.06μs |    34.61x |           5.42μs |   102.66x |
+| 200         |        1225.23μs |          16.91μs |    72.46x |          18.08μs |    67.77x |
+
 
 **Key Findings:**
 - Both Rust implementations are consistently faster across all configuration sizes
