@@ -40,7 +40,7 @@ uv run pytest -s -v tests/test_benchmark_comparison.py
 > The Markdown table output will be printed to stdout.
 > 
 
-~~~~AMD EPYC 7763 64-Core:
+AMD EPYC 7763 64-Core:
 
 <!-- BENCHMARK_TABLE_START -->
 | Config<br>Size | DenyListPlugin<br>Median | DenyListPluginRustRs<br>Median | Speedup | DenyListPluginRust<br>Median | Speedup |
