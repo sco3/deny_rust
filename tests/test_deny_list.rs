@@ -4,7 +4,7 @@ use deny_rust::deny_list::DenyList;
 use deny_rust::deny_list_rs::DenyListRs;
 
 use deny_rust::build_error::build_error;
-use deny_rust::module::deny_rust as dr;
+use deny_rust::pymodule::deny_rust as dr;
 use pyo3::PyResult;
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList};
