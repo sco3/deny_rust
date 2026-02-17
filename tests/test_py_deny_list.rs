@@ -1,5 +1,5 @@
 use deny_rust::deny_list::DenyList;
-use deny_rust::pymodule::DenyListRs;
+use deny_rust::deny_list_rs::DenyListRs;
 use pyo3::prelude::*;
 
 macro_rules! test_matcher_variant {
