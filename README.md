@@ -27,21 +27,23 @@ The Rust implementation provides substantial performance improvements over pure 
 
 Run benchmarks with:
 ```bash
-uv pytest -s -v tests/test_benchmark_comparison.py
+uv run pytest -s -v tests/test_benchmark_comparison.py
 ```
 
 ### Performance Comparison
 
-| Config Size | Python Median | Rust (aho-corasick) | Speedup | Rust (regex) | Speedup  |
-| :---------- | :------------ | :------------------ | :------ | :----------- |:---------|
-| 10 words    | 7.51µs        | 1.96µs              | 3.83x   | 2.00µs       | 3.80x    |
-| 100 words   | 553.41µs      | 5.18µs              | 106.84x | 16.09µs      | 34.39x     |
-| 200 words   | 1225.17µs     | 18.12µs             | 67.61x  | 16.85µs      | 72.90x   |
+### Performance Comparison
+
+| Config Size | Python Median    | Rust (aho-corasick) | Speedup    | Rust (regex)     | Speedup    |
+| :---------- | :--------------- | :------------------ | :--------- | :--------------- | :--------- |
+| 10          |           7.50μs |              2.01μs |     3.73x |           2.00μs |     3.74x |
+| 100         |         554.24μs |              5.27μs |   105.27x |          16.07μs |    34.49x |
+| 200         |        1224.51μs |             18.19μs |    67.32x |          17.73μs |    69.04x |
 
 **Key Findings:**
 - Both Rust implementations are consistently faster across all configuration sizes
-- **aho-corasick** excels with medium-sized lists (100 words: 106.84x speedup)
-- **regex crate (RegexSet)** shows more consistent scaling (72.90x at 200 words vs 67.61x for aho-corasick)
+- **aho-corasick** excels with medium-sized lists
+- **regex crate (RegexSet)** shows more consistent scaling
 - For high-throughput applications, the Rust implementation can reduce latency by an order of magnitude
 
 ### Prerequisites
@@ -60,7 +62,7 @@ uv sync
 make build-release
 
 # Run tests
-uv pytest -s -v
+uv run pytest -s -v
 ```
 
 ## Usage
@@ -87,11 +89,11 @@ Prompt containing deny word - rejected
 
 ```bash
 # Run all tests
-uv pytest -s -v
+uv run pytest -s -v
 cargo test
 
 # Run benchmark comparison
-uv pytest tests/test_benchmark_comparison.py -s -v
+uv run pytest tests/test_benchmark_comparison.py -s -v
 ```
 
 ### Python Bindings

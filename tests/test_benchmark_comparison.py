@@ -42,6 +42,8 @@ CONFIG_FILES = [
 RUNS_PER_CONFIG = 1
 FIRST_IMPL = DenyListPlugin
 SECOND_IMPL = DenyListPluginRustRs
+THIRD_IMPL = DenyListPluginRust
+ALL_IMPLS = [FIRST_IMPL, SECOND_IMPL, THIRD_IMPL]
 
 
 @runtime_checkable
@@ -257,6 +259,86 @@ def print_comparison(
     p99_speedup = first_p99 / second_p99 if second_p99 > 0 else 0
     total_speedup = first_total / second_total if second_total > 0 else 0
 
+
+def print_markdown_table(
+    all_config_results: List[Dict[str, Any]],
+):
+    """Print results in Markdown table format similar to README."""
+    print("\n" + "=" * 80)
+    print("MARKDOWN TABLE OUTPUT (for README)")
+    print("=" * 80)
+
+    print("\n### Performance Comparison\n")
+    print("| Config Size | Python Median    | Rust (aho-corasick) | Speedup    | Rust (regex)     | Speedup    |")
+    print("| :---------- | :--------------- | :------------------ | :--------- | :--------------- | :--------- |")
+
+    for config_result in all_config_results:
+        word_count = config_result["word_count"]
+        runs = config_result["runs"]
+
+        # Aggregate results across all runs
+        all_impl_medians = {
+            "DenyListPlugin": [],
+            "DenyListPluginRust": [],
+            "DenyListPluginRustRs": [],
+        }
+
+        for run_data in runs:
+            for impl_name in all_impl_medians.keys():
+                impl_results = run_data[impl_name]
+                medians = [
+                    c["timings"]["median_us"] for c in impl_results["combinations"]
+                ]
+                all_impl_medians[impl_name].append(statistics.median(medians))
+
+        # Calculate averages
+        avg_medians = {
+            name: statistics.mean(vals) for name, vals in all_impl_medians.items()
+        }
+
+        python_median = avg_medians["DenyListPlugin"]
+        aho_corasick_median = avg_medians["DenyListPluginRust"]
+        regex_median = avg_medians["DenyListPluginRustRs"]
+
+        aho_speedup = (
+            python_median / aho_corasick_median if aho_corasick_median > 0 else 0
+        )
+        regex_speedup = python_median / regex_median if regex_median > 0 else 0
+
+        print(
+            f"| {word_count:<11} | {python_median:>14.2f}μs | {aho_corasick_median:>17.2f}μs | {aho_speedup:>8.2f}x | {regex_median:>14.2f}μs | {regex_speedup:>8.2f}x |"
+        )
+
+    print("\n" + "=" * 80)
+
+
+def print_comparison(
+    first_results: Dict[str, Any],
+    second_results: Dict[str, Any],
+    first_name: str,
+    second_name: str,
+    config: Dict[str, Any] = None,
+):
+    """Print comparison between two implementations - always visible."""
+    first_medians = [c["timings"]["median_us"] for c in first_results["combinations"]]
+    second_medians = [c["timings"]["median_us"] for c in second_results["combinations"]]
+
+    first_p99s = [c["timings"]["p99_us"] for c in first_results["combinations"]]
+    second_p99s = [c["timings"]["p99_us"] for c in second_results["combinations"]]
+
+    first_median = statistics.median(first_medians)
+    second_median = statistics.median(second_medians)
+
+    first_p99 = statistics.median(first_p99s)
+    second_p99 = statistics.median(second_p99s)
+
+    first_total = first_results["total_time_us"]
+    second_total = second_results["total_time_us"]
+
+    median_speedup = first_median / second_median if second_median > 0 else 0
+    p99_speedup = first_p99 / second_p99 if second_p99 > 0 else 0
+    total_speedup = first_total / second_total if second_total > 0 else 0
+
     # Calculate total deny words and sample text sizes
     total_deny_words = 0
     sample_text_sizes = []
@@ -302,15 +384,15 @@ def print_comparison(
 async def test_benchmark_comparison():
     """Benchmark comparison with config - runs all configs multiple times"""
 
-    first_name = FIRST_IMPL.__name__
-    second_name = SECOND_IMPL.__name__
+    impl_names = [impl.__name__ for impl in ALL_IMPLS]
 
     print("\n" + "=" * 80)
-    print(f"DENY CHECK BENCHMARK - {first_name} vs {second_name} Comparison")
+    print(f"DENY CHECK BENCHMARK - Three Implementation Comparison")
     print("=" * 80)
     print(f"Configs: {len(CONFIG_FILES)} files x {RUNS_PER_CONFIG} runs each")
     print(f"Warmup Runs: {WARMUP_RUNS}")
     print(f"Benchmark Runs: {BENCHMARK_RUNS}")
+    print(f"Implementations: {', '.join(impl_names)}")
     print("=" * 80)
 
     # Store all results for final summary
@@ -336,33 +418,21 @@ async def test_benchmark_comparison():
                 f"\n--- Run {run_num}/{RUNS_PER_CONFIG} for {word_count} words config ---"
             )
 
-            # First implementation benchmark
-            print(f"\nBenchmarking {first_name} implementation...")
-            first_plugins = create_plugin_instances(config, FIRST_IMPL)
-            first_results = await benchmark_plugin(
-                first_plugins,
-                config["sample_texts"],
-                config,
-            )
+            run_results = {"run": run_num}
 
-            # Second implementation benchmark
-            print(f"\nBenchmarking {second_name} implementation...")
-            second_plugins = create_plugin_instances(config, SECOND_IMPL)
-            second_results = await benchmark_plugin(
-                second_plugins,
-                config["sample_texts"],
-                config,
-                warmup_runs=WARMUP_RUNS,
-                benchmark_runs=BENCHMARK_RUNS,
-            )
+            # Benchmark all implementations
+            for impl in ALL_IMPLS:
+                impl_name = impl.__name__
+                print(f"\nBenchmarking {impl_name} implementation...")
+                plugins = create_plugin_instances(config, impl)
+                results = await benchmark_plugin(
+                    plugins,
+                    config["sample_texts"],
+                    config,
+                )
+                run_results[impl_name] = results
 
-            config_run_results.append(
-                {
-                    "run": run_num,
-                    "first_results": first_results,
-                    "second_results": second_results,
-                }
-            )
+            config_run_results.append(run_results)
 
         # Store results for this config
         all_config_results.append(
@@ -396,85 +466,97 @@ async def test_benchmark_comparison():
             )
             print("-" * 80)
 
-        # Aggregate results across all runs
-        all_first_medians = []
-        all_second_medians = []
-        all_first_p99s = []
-        all_second_p99s = []
-        all_first_totals = []
-        all_second_totals = []
+        # Aggregate results across all runs for all implementations
+        all_impl_medians = {impl.__name__: [] for impl in ALL_IMPLS}
+        all_impl_p99s = {impl.__name__: [] for impl in ALL_IMPLS}
+        all_impl_totals = {impl.__name__: [] for impl in ALL_IMPLS}
 
         for run_data in runs:
-            first_res = run_data["first_results"]
-            second_res = run_data["second_results"]
+            for impl in ALL_IMPLS:
+                impl_name = impl.__name__
+                impl_results = run_data[impl_name]
 
-            first_medians = [
-                c["timings"]["median_us"] for c in first_res["combinations"]
-            ]
-            second_medians = [
-                c["timings"]["median_us"] for c in second_res["combinations"]
-            ]
-            first_p99s = [c["timings"]["p99_us"] for c in first_res["combinations"]]
-            second_p99s = [c["timings"]["p99_us"] for c in second_res["combinations"]]
+                medians = [c["timings"]["median_us"] for c in impl_results["combinations"]]
+                p99s = [c["timings"]["p99_us"] for c in impl_results["combinations"]]
 
-            all_first_medians.append(statistics.median(first_medians))
-            all_second_medians.append(statistics.median(second_medians))
-            all_first_p99s.append(statistics.median(first_p99s))
-            all_second_p99s.append(statistics.median(second_p99s))
-            all_first_totals.append(first_res["total_time_us"])
-            all_second_totals.append(second_res["total_time_us"])
+                all_impl_medians[impl_name].append(statistics.median(medians))
+                all_impl_p99s[impl_name].append(statistics.median(p99s))
+                all_impl_totals[impl_name].append(impl_results["total_time_us"])
 
-        # Calculate averages
-        avg_first_median = statistics.mean(all_first_medians)
-        avg_second_median = statistics.mean(all_second_medians)
-        avg_first_p99 = statistics.mean(all_first_p99s)
-        avg_second_p99 = statistics.mean(all_second_p99s)
-        avg_first_total = statistics.mean(all_first_totals)
-        avg_second_total = statistics.mean(all_second_totals)
+        # Calculate averages for all implementations
+        avg_medians = {
+            name: statistics.mean(vals) for name, vals in all_impl_medians.items()
+        }
+        avg_p99s = {
+            name: statistics.mean(vals) for name, vals in all_impl_p99s.items()
+        }
+        avg_totals = {
+            name: statistics.mean(vals) for name, vals in all_impl_totals.items()
+        }
 
-        median_speedup = (
-            avg_first_median / avg_second_median if avg_second_median > 0 else 0
-        )
-        p99_speedup = avg_first_p99 / avg_second_p99 if avg_second_p99 > 0 else 0
-        total_speedup = (
-            avg_first_total / avg_second_total if avg_second_total > 0 else 0
-        )
-
+        # Print comparison table
         print(f"Runs: {RUNS_PER_CONFIG}")
-        print(f"{'Metric':<20} {first_name:<15} {second_name:<15} {'Speedup':<15}")
-        print("-" * 80)
-        print(
-            f"{'Avg Median':<20} {avg_first_median:>10.2f}μs {avg_second_median:>10.2f}μs {median_speedup:>10.2f}x"
-        )
-        print(
-            f"{'Avg P99':<20} {avg_first_p99:>10.2f}μs {avg_second_p99:>10.2f}μs {p99_speedup:>10.2f}x"
-        )
-        print(
-            f"{'Avg Total Time':<20} {avg_first_total / 1_000_000:>10.6f}s {avg_second_total / 1_000_000:>10.6f}s {total_speedup:>10.2f}x"
-        )
-        print(
-            f"\n {second_name} is {median_speedup:.2f}x faster (median, {word_count} words)"
-        )
+        header = f"{'Metric':<20}"
+        for name in impl_names:
+            header += f" {name:<18}"
+        print(header)
+        print("-" * (20 + 18 * len(impl_names)))
+
+        # Median row
+        median_row = f"{'Avg Median':<20}"
+        for name in impl_names:
+            median_row += f" {avg_medians[name]:>10.2f}μs"
+        print(median_row)
+
+        # P99 row
+        p99_row = f"{'Avg P99':<20}"
+        for name in impl_names:
+            p99_row += f" {avg_p99s[name]:>10.2f}μs"
+        print(p99_row)
+
+        # Total Time row
+        total_row = f"{'Avg Total Time':<20}"
+        for name in impl_names:
+            total_row += f" {avg_totals[name] / 1_000_000:>10.6f}s"
+        print(total_row)
+
+        # Speedup calculations (relative to first implementation - Python)
+        first_name = impl_names[0]
+        print(f"\nSpeedup vs {first_name}:")
+        for i, name in enumerate(impl_names[1:], 1):
+            median_speedup = (
+                avg_medians[first_name] / avg_medians[name]
+                if avg_medians[name] > 0
+                else 0
+            )
+            p99_speedup = (
+                avg_p99s[first_name] / avg_p99s[name] if avg_p99s[name] > 0 else 0
+            )
+            total_speedup = (
+                avg_totals[first_name] / avg_totals[name]
+                if avg_totals[name] > 0
+                else 0
+            )
+            print(
+                f"  {name}: {median_speedup:.2f}x (median), {p99_speedup:.2f}x (p99), {total_speedup:.2f}x (total)"
+            )
+
+    # Print Markdown table for README
+    print_markdown_table(all_config_results)
 
     print("\n" + "=" * 80)
 
-    # Assertions - check all runs
+    # Assertions - check all runs for all implementations
     for config_result in all_config_results:
         for run_data in config_result["runs"]:
-            first_mismatches = [
-                c
-                for c in run_data["first_results"]["combinations"]
-                if not c.get("matches_expected", True)
-            ]
-            second_mismatches = [
-                c
-                for c in run_data["second_results"]["combinations"]
-                if not c.get("matches_expected", True)
-            ]
+            for impl in ALL_IMPLS:
+                impl_name = impl.__name__
+                mismatches = [
+                    c
+                    for c in run_data[impl_name]["combinations"]
+                    if not c.get("matches_expected", True)
+                ]
 
-            assert (
-                len(first_mismatches) == 0
-            ), f"{first_name} implementation has {len(first_mismatches)} mismatches in {config_result['config_path']}"
-            assert (
-                len(second_mismatches) == 0
-            ), f"{second_name} implementation has {len(second_mismatches)} mismatches in {config_result['config_path']}"
+                assert (
+                    len(mismatches) == 0
+                ), f"{impl_name} implementation has {len(mismatches)} mismatches in {config_result['config_path']}"
