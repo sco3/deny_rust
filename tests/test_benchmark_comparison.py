@@ -201,7 +201,7 @@ def print_markdown_table(
             header_parts.append(f"{name} Median")
             separator_parts.append(":---------------")
         else:
-            header_parts.append(f"{name}")
+            header_parts.append(f"{name} Median")
             header_parts.append("Speedup")
             separator_parts.append(":------------------")
             separator_parts.append(":---------")
