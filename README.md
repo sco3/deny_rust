@@ -92,7 +92,7 @@ Choose the implementation that best fits your needs:
 
 - **deny.DenyListPlugin**: Pure Python, easy to debug, good for small word lists
 - **deny_rust.DenyListPluginRust**: Hybrid approach with aho-corasic crate
-- **deny_rust_rs.DenyListPluginRustRs**: Hybrid approac with regex crate (RegexSet)
+- **deny_rust_rs.DenyListPluginRustRs**: Hybrid approach with regex crate (RegexSet)
 
 ## Usage
 
