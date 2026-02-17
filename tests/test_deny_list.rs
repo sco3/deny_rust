@@ -17,29 +17,42 @@ fn common_test_logic<T: deny_rust::matcher::Matcher>(deny_list: &T, py: Python) 
     assert!(deny_list.is_match("111  asdf  222"));
     assert!(deny_list.is_match("111  asdf  222 jkl"));
     assert!(!deny_list.is_match("111 222"));
-    let dict = PyDict::new(py);
+
+    // test blocked prompts
+
+    assert!(deny_list.scan_str(BLOCK_PROMPT));
+
     let list_data: Vec<String> = BLOCK_PROMPT
         .split(' ')
         .map(std::string::ToString::to_string)
         .collect();
     let list = PyList::new(py, list_data).unwrap();
-
-    dict.set_item("user", BLOCK_PROMPT).unwrap();
-    assert!(deny_list.scan_str(BLOCK_PROMPT));
-    assert!(deny_list.scan(&dict));
-    assert!(deny_list.scan_any(&dict));
     assert!(deny_list.scan_any(&list));
 
+    let dict = PyDict::new(py);
+    dict.set_item("user", BLOCK_PROMPT).unwrap();
+    // should not scan non-string, improves test coverage
+    dict.set_item("id", 1).unwrap();
+
+    assert!(deny_list.scan(&dict));
+    assert!(deny_list.scan_any(&dict));
+
+    // test non blocked prompts
+    assert!(!deny_list.scan_str(OK_PROMPT));
+
     dict.clear();
+    dict.set_item("user", OK_PROMPT).unwrap();
+    // should not scan non-string, improves test coverage
+    dict.set_item("id", 1).unwrap();
+    assert!(!deny_list.scan(&dict));
+    assert!(!deny_list.scan_any(&dict));
+
     let list_data: Vec<String> = OK_PROMPT
         .split(' ')
         .map(std::string::ToString::to_string)
         .collect();
     let list = PyList::new(py, &list_data).unwrap();
-    dict.set_item("user", OK_PROMPT).unwrap();
-    assert!(!deny_list.scan_str(OK_PROMPT));
-    assert!(!deny_list.scan(&dict));
-    assert!(!deny_list.scan_any(&dict));
+
     assert!(!deny_list.scan_any(&list));
 }
 
