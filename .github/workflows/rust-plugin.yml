@@ -40,8 +40,9 @@ jobs:
       - run: |
           echo "### Code Coverage Summary" >> $GITHUB_STEP_SUMMARY
           echo '```text' >> $GITHUB_STEP_SUMMARY
-          cargo llvm-cov --fail-under-lines 90 --summary-only >> $GITHUB_STEP_SUMMARY
+          cargo llvm-cov --summary-only >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
+          cargo llvm-cov --fail-under-lines 90 > /dev/null
 
   licenses-audit:
     name: Licenses Audit

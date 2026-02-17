@@ -313,7 +313,7 @@ async def test_benchmark_comparison():
     impl_names = [impl.__name__ for impl in ALL_IMPLS]
 
     print("\n" + "=" * 80)
-    print(f"DENY CHECK BENCHMARK - Three Implementation Comparison")
+    print(f"DENY CHECK BENCHMARK - {len(impl_names)} Implementation Comparison")
     print("=" * 80)
     print(f"Configs: {len(CONFIG_FILES)} files x {RUNS_PER_CONFIG} runs each")
     print(f"Warmup Runs: {WARMUP_RUNS}")
@@ -449,7 +449,7 @@ async def test_benchmark_comparison():
         # Speedup calculations (relative to first implementation - Python)
         first_name = impl_names[0]
         print(f"\nSpeedup vs {first_name}:")
-        for i, name in enumerate(impl_names[1:], 1):
+        for name in impl_names[1:]:
             median_speedup = (
                 avg_medians[first_name] / avg_medians[name]
                 if avg_medians[name] > 0
