@@ -9,7 +9,7 @@ use pyo3::PyResult;
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList};
 
-const DENY_WORDS: &[&str] = &["asdf", "jkl"];
+const DENY_WORDS: &[&str] = &["ASDF", "JKL"];
 const BLOCK_PROMPT: &str = "111  asdf 222";
 const OK_PROMPT: &str = "111 222 333";
 

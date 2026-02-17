@@ -8,7 +8,7 @@ macro_rules! test_matcher_variant {
         fn $test_fn_name() {
             Python::initialize();
             Python::attach(|py| {
-                let words = vec!["badword".to_string()];
+                let words = vec!["BADWORD".to_string()];
                 let matcher = $struct_name::new(words).unwrap();
 
                 assert!(matcher.is_match("badword"));

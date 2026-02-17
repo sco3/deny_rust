@@ -15,7 +15,8 @@ pub struct DenyList {
 impl Matcher for DenyList {
     /// implements match with aho-corasic
     fn is_match(&self, s: &str) -> bool {
-        self.ac.is_match(s)
+        // Convert input to lowercase for case-insensitive matching
+        self.ac.is_match(&s.to_lowercase())
     }
 }
 
@@ -26,9 +27,12 @@ impl DenyList {
     /// * aho-corasic errors (too long patterns)
     #[new]
     pub fn new(words: Vec<String>) -> PyResult<Self> {
+        // Store deny words in lowercase for case-insensitive matching
+        let words_lower: Vec<String> = words.into_iter().map(|w| w.to_lowercase()).collect();
+
         let ac = AhoCorasick::builder()
             .match_kind(MatchKind::LeftmostFirst)
-            .build(words)
+            .build(words_lower)
             .map_err(build_error)?;
 
         Ok(Self { ac })

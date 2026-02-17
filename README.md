@@ -19,6 +19,16 @@ rejects the prompt request, providing an additional security layer for your MCP 
 - **Pre-Hook Integration**: Operates at the `prompt_pre_fetch` hook stage
 - **Comprehensive Testing**: Includes benchmark tests demonstrating performance characteristics
 
+## Previous Python Implementation (`deny.py`)
+
+The original `deny.DenyListPlugin` has the following limitations:
+
+- **No nested structure traversal**: Only checks top-level string values in `payload.args`; does not recurse into nested dicts or lists
+- **Case-sensitive matching**: Does not normalize deny words or input strings to lowercase/uppercase, requiring exact case matches
+- **Flat iteration**: Uses simple `any(word in payload.args[key] for word in self._deny_list)` without deep traversal
+
+The Rust implementations address these limitations with case-insensitive matching and comprehensive data structure traversal.
+
 ## Performance Benefits
 
 The Rust implementation provides substantial performance improvements over pure Python:

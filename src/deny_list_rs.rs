@@ -13,7 +13,8 @@ pub struct DenyListRs {
 impl Matcher for DenyListRs {
     /// implements matching with regex set
     fn is_match(&self, s: &str) -> bool {
-        self.rs.is_match(s)
+        // Convert input to lowercase for case-insensitive matching
+        self.rs.is_match(&s.to_lowercase())
     }
 }
 
@@ -24,7 +25,9 @@ impl DenyListRs {
     /// * regex problems (should not happen with simple match)
     #[new]
     pub fn new(words: Vec<String>) -> PyResult<Self> {
-        let patterns: Vec<String> = words.into_iter().map(|w| escape(&w)).collect();
+        // Store deny words in lowercase for case-insensitive matching
+        let words_lower: Vec<String> = words.into_iter().map(|w| w.to_lowercase()).collect();
+        let patterns: Vec<String> = words_lower.into_iter().map(|w| escape(&w)).collect();
 
         let rs = RegexSet::new(patterns).map_err(build_error)?;
 
