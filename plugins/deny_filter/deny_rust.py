@@ -9,7 +9,6 @@ Simple example plugin for searching and replacing text.
 
 # First-Party
 from mcpgateway.plugins.framework import (
-    Plugin,
     PluginConfig,
     PluginContext,
     PluginViolation,
@@ -19,14 +18,14 @@ from mcpgateway.plugins.framework import (
 from mcpgateway.services.logging_service import LoggingService
 
 import deny_rust
-from plugins.deny_filter.deny import DenyListConfig
+from plugins.deny_filter.deny import DenyListConfig, DenyListPlugin
 
 # Initialize logging service first
 logging_service = LoggingService()
 logger = logging_service.get_logger(__name__)
 
 
-class DenyListPluginRust(Plugin):
+class DenyListPluginRust(DenyListPlugin):
     """Example deny list plugin."""
 
     def __init__(self, config: PluginConfig):
@@ -66,7 +65,3 @@ class DenyListPluginRust(Plugin):
                     continue_processing=False,
                 )
         return PromptPrehookResult(modified_payload=payload)
-
-    async def shutdown(self) -> None:
-        """Cleanup when plugin shuts down."""
-        logger.info("Deny list plugin shutting down")

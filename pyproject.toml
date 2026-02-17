@@ -17,6 +17,7 @@ build-backend = "maturin"
 # This tells maturin which features to use when uv builds it
 features = ["pyo3/extension-module"]
 module-name = "deny_rust"
+include = ["deny_rust/*.pyi", "deny_rust/py.typed"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
@@ -34,4 +35,5 @@ dev = [
     "uv>=0.10.2",
     "pytest-benchmark>=5.2.3",
     "pyrefly>=0.52.0",
+    "ruff>=0.15.1",
 ]

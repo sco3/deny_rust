@@ -9,11 +9,9 @@ This module loads configurations for plugins.
 """
 
 # Third-Party
-from pydantic import BaseModel
 
 # First-Party
 from mcpgateway.plugins.framework import (
-    Plugin,
     PluginConfig,
     PluginContext,
     PluginViolation,
@@ -21,7 +19,7 @@ from mcpgateway.plugins.framework import (
     PromptPrehookResult,
 )
 from mcpgateway.services.logging_service import LoggingService
-from plugins.deny_filter.deny import DenyListConfig
+from plugins.deny_filter.deny import DenyListConfig, DenyListPlugin
 
 import deny_rust
 
@@ -30,7 +28,7 @@ logging_service = LoggingService()
 logger = logging_service.get_logger(__name__)
 
 
-class DenyListPluginRustRs(Plugin):
+class DenyListPluginRustRs(DenyListPlugin):
     """Example deny list plugin."""
 
     def __init__(self, config: PluginConfig):
@@ -70,7 +68,3 @@ class DenyListPluginRustRs(Plugin):
                     continue_processing=False,
                 )
         return PromptPrehookResult(modified_payload=payload)
-
-    async def shutdown(self) -> None:
-        """Cleanup when plugin shuts down."""
-        logger.info("Deny list plugin shutting down")
