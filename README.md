@@ -41,9 +41,10 @@ uv run pytest -s -v tests/test_benchmark_comparison.py
 <!-- BENCHMARK_TABLE_START -->
 | Config<br>Size | DenyListPlugin<br>Median | DenyListPluginRustRs<br>Median | Speedup | DenyListPluginRust<br>Median | Speedup |
 | :---------- | :--------------- | :------------------ | :--------- | :------------------ | :--------- |
-| 10          |           7.48μs |           2.01μs |     3.72x |           1.97μs |     3.79x |
-| 100         |         553.92μs |          16.06μs |    34.48x |           5.37μs |   103.25x |
-| 200         |        1226.79μs |          16.89μs |    72.63x |          18.60μs |    65.96x |<!-- BENCHMARK_TABLE_END -->
+| 10          |          13.76μs |           3.66μs |     3.76x |           3.60μs |     3.83x |
+| 100         |         740.78μs |          23.69μs |    31.27x |           9.26μs |    80.00x |
+| 200         |        1680.60μs |          24.83μs |    67.68x |          28.82μs |    58.32x |
+<!-- BENCHMARK_TABLE_END -->
 
 **Key Findings:**
 - Both Rust implementations are consistently faster across all configuration sizes
