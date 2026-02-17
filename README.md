@@ -13,8 +13,8 @@ rejects the prompt request, providing an additional security layer for your MCP 
 - Fast Pattern Matching: Rust implementation uses optimized algorithms for efficient word detection
 - Multiple Implementation Options:
     - Pure Python implementation (DenyListPlugin)
-    - Python with Rust bindings (DenyListPluginRust)
-    - Pure Rust implementation (DenyListPluginRustRs)
+    - Python with Rust bindings (DenyListPluginRust - aho-corasic crate)
+    - Python with Rust bindings (DenyListPluginRustRs - regex crate (RegexSet))
 - Configurable Deny Lists: Support for multiple deny word lists with different priorities
 - Pre-Hook Integration: Operates at the prompt_pre_fetch hook stage
 - Comprehensive Testing: Includes benchmark tests demonstrating performance characteristics
@@ -30,34 +30,30 @@ Run benchmarks with:
    uv pytest -s -v tests/test_benchmark_comparison.py
    ```
 
-## Performance Comparison
+### Performance Comparison
 
-### Test data
-
-Modify your configuration or update the deny word lists in test data files:
-
-```bash
-   tests/data/deny_check_config_10.json   # 10 words
-   tests/data/deny_check_config_20.json   # 20 words
-   tests/data/deny_check_config_100.json  # 100 words
-   tests/data/deny_check_config_200.json  # 200 words
-```
-Results:
+#### DenyListPluginRust (aho-corasick crate)
 
 | Config Size (deny words) | Python Median | Rust Median | Speedup  |
 | :----------------------- | :------------ | :---------- | :------- |
-| 3                        | 2.27µs        | 1.58µs      | 1.44x    |
-| 20                       | 11.73µs       | 2.07µs      | 5.67x    |
-| 100                      | 556.36µs      | 5.20µs      | 107x     |
-| 200                      | 1226.27µs     | 18.10µs     | 68x      |
+| 10                       | 7.51µs        | 1.96µs      | 3.83x    |
+| 100                      | 553.41µs      | 5.18µs      | 106.84x  |
+| 200                      | 1225.17µs     | 18.12µs     | 67.61x   |
 
-Key Findings:
-- Rust implementation is consistently faster across all configuration sizes
-- Performance advantage increases dramatically with larger deny word lists
-- At 100 words: Rust is 107x faster than Python
-- At 200 words: Rust maintains 68x speedup over Python
+#### DenyListPluginRustRs (regex crate - RegexSet)
 
-Note: Actual performance depends on text size, word list size, and system specifications
+| Config Size (deny words) | Python Median | Rust Median | Speedup  |
+| :----------------------- | :------------ | :---------- | :------- |
+| 10                       | 7.62µs        | 2.00µs      | 3.80x    |
+| 100                      | 559.13µs      | 16.09µs     | 34.76x   |
+| 200                      | 1228.33µs     | 16.85µs     | 72.90x   |
+
+**Key Findings:**
+- Both Rust implementations are consistently faster across all configuration sizes
+- **aho-corasick** excels with medium-sized lists (100 words: 106.84x speedup)
+- **regex crate (RegexSet)** shows more consistent scaling (72.90x at 200 words vs 67.61x for aho-corasick)
+- At 10 words, both implementations perform similarly (~3.8x speedup)
+- For large deny word lists (200 words), regex crate has slightly better median performance (16.85µs vs 18.12µs)
 
 The Rust implementation becomes increasingly advantageous as:
 - The number of deny words increases

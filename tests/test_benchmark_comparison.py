@@ -36,13 +36,12 @@ WARMUP_RUNS = 3000
 BENCHMARK_RUNS = 10000
 CONFIG_FILES = [
     "data/deny_check_config_10.json",
-    "data/deny_check_config_20.json",
     "data/deny_check_config_100.json",
     "data/deny_check_config_200.json",
 ]
 RUNS_PER_CONFIG = 1
 FIRST_IMPL = DenyListPlugin
-SECOND_IMPL = DenyListPluginRust
+SECOND_IMPL = DenyListPluginRustRs
 
 
 @runtime_checkable
