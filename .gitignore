@@ -3,4 +3,5 @@
 **/__pycache__
 deny_check_results.json
 scalene*
+.project
 
