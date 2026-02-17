@@ -17,8 +17,6 @@ from mcpgateway.plugins.framework import (
     PromptPrehookResult,
 )
 from mcpgateway.services.logging_service import LoggingService
-# Third-Party
-from pydantic import BaseModel
 
 import deny_rust
 from plugins.deny_filter.deny import DenyListConfig
