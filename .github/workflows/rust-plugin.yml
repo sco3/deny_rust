@@ -121,11 +121,11 @@ jobs:
           df -h / >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
 
-      - name: Build Rust extension
-        run: uv run maturin develop --release
-
       - name: Install dependencies
         run: uv sync --frozen
+
+      - name: Build Rust extension
+        run: uv run maturin develop --release
 
       - name: Run pytest
         run: uv run pytest -v -s
