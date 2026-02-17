@@ -4,9 +4,11 @@ Pytest-based benchmark comparison between Python and Rust deny list implementati
 This test always displays detailed output regardless of pytest flags.
 """
 
+import asyncio
 import json
 import logging
 import statistics
+import time
 from pathlib import Path
 from typing import List, Dict, Any, Type, Protocol, runtime_checkable
 
@@ -22,8 +24,9 @@ from mcpgateway.services.logging_service import LoggingService
 
 from plugins.deny_filter.deny import DenyListPlugin
 from plugins.deny_filter.deny_rust import DenyListPluginRust
-from plugins.deny_filter.deny_rust_mp import DenyListPluginRustMp
 from plugins.deny_filter.deny_rust_rs import DenyListPluginRustRs
+
+CONCURRENCY = 10
 
 # Initialize logging service first
 loggingSvc = LoggingService()
@@ -31,15 +34,15 @@ loggingSvc.get_logger("plugins.deny_filter.deny").setLevel(logging.ERROR)
 loggingSvc.get_logger("plugins.deny_filter.deny_rust").setLevel(logging.ERROR)
 loggingSvc.get_logger("plugins.deny_filter.deny_rust_rs").setLevel(logging.ERROR)
 
-WARMUP_RUNS = 0
-BENCHMARK_RUNS = 3
+WARMUP_RUNS = 3000
+BENCHMARK_RUNS = 10000
 CONFIG_FILES = [
     "data/deny_check_config_10.json",
-    # "data/deny_check_config_100.json",
-    # "data/deny_check_config_200.json",
+    "data/deny_check_config_100.json",
+    "data/deny_check_config_200.json",
 ]
 RUNS_PER_CONFIG = 1
-LL_IMPLS = [DenyListPlugin, DenyListPluginRustRs, DenyListPluginRust]
+ALL_IMPLS = [DenyListPlugin, DenyListPluginRustRs, DenyListPluginRust]
 
 
 @runtime_checkable
@@ -84,6 +87,90 @@ def create_plugin_instances(
     return plugins
 
 
+async def _run_single_prompt_pre_fetch(
+        plugin: PromptPreFetchPlugin,
+        payload: PromptPrehookPayload,
+        ctx: PluginContext,
+        semaphore: asyncio.Semaphore,
+) -> tuple[float, Any]:
+    """Run a single prompt_pre_fetch call with semaphore limiting.
+    
+    Returns:
+        Tuple of (elapsed_time_us, result)
+    """
+    async with semaphore:
+        start = time.perf_counter()
+        result = await plugin.prompt_pre_fetch(payload, ctx)
+        elapsed = time.perf_counter() - start
+        return elapsed * 1_000_000, result
+
+
+async def _benchmark_single_combination(
+        plugin_name: str,
+        plugin: PromptPreFetchPlugin,
+        sample: Dict[str, Any],
+        config: Dict[str, Any],
+        warmup_runs: int,
+        benchmark_runs: int,
+        semaphore: asyncio.Semaphore,
+) -> Dict[str, Any]:
+    """Benchmark a single plugin-sample combination with all prompt_pre_fetch calls in separate tasks."""
+    gctx = GlobalContext(request_id="deny-benchmark")
+    ctx = PluginContext(global_context=gctx)
+
+    payload = PromptPrehookPayload(
+        prompt_id="benchmark_test",
+        args={
+            "text": sample["text"],
+            "system": sample["text"],
+            "other": sample["text"],
+        },
+    )
+
+    # Warmup - each run in separate task with semaphore
+    warmup_tasks = [
+        _run_single_prompt_pre_fetch(plugin, payload, ctx, semaphore)
+        for _ in range(warmup_runs)
+    ]
+    await asyncio.gather(*warmup_tasks)
+
+    # Benchmark - each run in separate task with semaphore
+    benchmark_tasks = [
+        _run_single_prompt_pre_fetch(plugin, payload, ctx, semaphore)
+        for _ in range(benchmark_runs)
+    ]
+    benchmark_results = await asyncio.gather(*benchmark_tasks)
+
+    # Extract timings and get actual_blocked from first result
+    timings_us = [result[0] for result in benchmark_results]
+    actual_blocked = benchmark_results[0][1].violation is not None
+
+    # Statistics
+    timings_us.sort()
+    median = statistics.median(timings_us)
+    p99_index = int(len(timings_us) * 0.99)
+    p99 = timings_us[p99_index]
+    mean = statistics.mean(timings_us)
+    min_time = min(timings_us)
+    total_time_combination = sum(timings_us)
+
+    return {
+        "plugin_name": plugin_name,
+        "sample_name": sample["name"],
+        "sample_text_length": len(sample["text"]),
+        "expected_block": sample.get("should_block", False),
+        "actual_blocked": actual_blocked,
+        "matches_expected": actual_blocked == sample.get("should_block", False),
+        "timings": {
+            "median_us": round(median, 2),
+            "p99_us": round(p99, 2),
+            "mean_us": round(mean, 2),
+            "min_us": round(min_time, 2),
+            "total_us": round(total_time_combination, 2),
+        },
+    }
+
+
 async def benchmark_plugin(
         plugins: List[tuple[str, PromptPreFetchPlugin]],
         sample_texts: List[Dict[str, Any]],
@@ -91,11 +178,8 @@ async def benchmark_plugin(
         warmup_runs: int = WARMUP_RUNS,
         benchmark_runs: int = BENCHMARK_RUNS,
 ) -> Dict[str, Any]:
-    """Benchmark prompt_pre_fetch execution for all combinations."""
-    import time
-
-    gctx = GlobalContext(request_id="deny-benchmark")
-    ctx = PluginContext(global_context=gctx)
+    """Benchmark prompt_pre_fetch execution for all combinations with concurrency limiting."""
+    semaphore = asyncio.Semaphore(CONCURRENCY)
 
     results = {
         "total_combinations": len(plugins) * len(sample_texts),
@@ -105,70 +189,28 @@ async def benchmark_plugin(
         "combinations": [],
     }
 
+    # Create tasks for all combinations
+    tasks = []
     for plugin_name, plugin in plugins:
-        plugin_deny_words = []
-        for deny_list in config["deny_word_lists"]:
-            if deny_list["name"] == plugin_name:
-                plugin_deny_words = deny_list["words"]
-                break
-
         for sample in sample_texts:
-            # Use should_block from data file, not recalculated
-            should_block = sample.get("should_block", False)
-
-            payload = PromptPrehookPayload(
-                prompt_id="benchmark_test",
-                args={
-                    "text": sample["text"],
-                    "system": sample["text"],
-                    "other": sample["text"],
-                },
+            task = _benchmark_single_combination(
+                plugin_name,
+                plugin,
+                sample,
+                config,
+                warmup_runs,
+                benchmark_runs,
+                semaphore,
             )
+            tasks.append(task)
 
-            # Warmup
-            for _ in range(warmup_runs):
-                await plugin.prompt_pre_fetch(payload, ctx)
+    # Run all tasks with semaphore limiting concurrency
+    combination_results = await asyncio.gather(*tasks)
 
-            # Benchmark
-            timings_us = []
-            actual_blocked = None
-
-            for i in range(benchmark_runs):
-                start = time.perf_counter()
-                result = await plugin.prompt_pre_fetch(payload, ctx)
-                elapsed = time.perf_counter() - start
-                timings_us.append(elapsed * 1_000_000)
-
-                if i == 0:
-                    actual_blocked = result.violation is not None
-
-            # Statistics
-            timings_us.sort()
-            median = statistics.median(timings_us)
-            p99_index = int(len(timings_us) * 0.99)
-            p99 = timings_us[p99_index]
-            mean = statistics.mean(timings_us)
-            min_time = min(timings_us)
-            total_time_combination = sum(timings_us)
-
-            combination_result = {
-                "plugin_name": plugin_name,
-                "sample_name": sample["name"],
-                "sample_text_length": len(sample["text"]),
-                "expected_block": should_block,
-                "actual_blocked": actual_blocked,
-                "matches_expected": actual_blocked == should_block,
-                "timings": {
-                    "median_us": round(median, 2),
-                    "p99_us": round(p99, 2),
-                    "mean_us": round(mean, 2),
-                    "min_us": round(min_time, 2),
-                    "total_us": round(total_time_combination, 2),
-                },
-            }
-
-            results["combinations"].append(combination_result)
-            results["total_time_us"] += total_time_combination
+    # Aggregate results
+    for combination_result in combination_results:
+        results["combinations"].append(combination_result)
+        results["total_time_us"] += combination_result["timings"]["total_us"]
 
     return results
 

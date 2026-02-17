@@ -5,10 +5,11 @@ use deny_rust::deny_list_rs::DenyListRs;
 
 use deny_rust::build_error::build_error;
 use deny_rust::module::deny_rust as dr;
+use pyo3::PyResult;
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList};
-use pyo3::PyResult;
 use rmpv::Value;
+use rmpv::encode::write_value;
 
 const DENY_WORDS: &[&str] = &[
     "abracadabra",
@@ -29,19 +30,17 @@ fn common_test_logic<T: deny_rust::matcher::Matcher>(deny_list: &T, py: Python) 
     assert!(deny_list.is_match("111 voila  222"));
     assert!(deny_list.is_match("111 chakra 222 voila"));
     assert!(!deny_list.is_match("111 222"));
-    let map = Value::Map(vec![
-        (Value::from("id"), Value::from(1)),
-        (Value::from("user"), Value::from(OK_PROMPT)),
-    ]);
+
+    check_bad_msgpack(deny_list);
+
+    check_msgpack_ok(deny_list);
+    check_msgpack_blocked(deny_list);
 
     // test blocked prompts
 
-    assert!(deny_list.scan_str(BLOCK_PROMPT));
+    assert!(deny_list.is_match(BLOCK_PROMPT));
 
-    let list_data: Vec<String> = BLOCK_PROMPT
-        .split(' ')
-        .map(std::string::ToString::to_string)
-        .collect();
+    let list_data: Vec<String> = BLOCK_PROMPT.split(' ').map(ToString::to_string).collect();
     let list = PyList::new(py, list_data).unwrap();
     assert!(deny_list.scan_any(&list));
 
@@ -54,7 +53,7 @@ fn common_test_logic<T: deny_rust::matcher::Matcher>(deny_list: &T, py: Python) 
     assert!(deny_list.scan_any(&dict));
 
     // test non blocked prompts
-    assert!(!deny_list.scan_str(OK_PROMPT));
+    assert!(!deny_list.is_match(OK_PROMPT));
 
     dict.clear();
     dict.set_item("user", OK_PROMPT).unwrap();
@@ -63,21 +62,47 @@ fn common_test_logic<T: deny_rust::matcher::Matcher>(deny_list: &T, py: Python) 
     assert!(!deny_list.scan(&dict));
     assert!(!deny_list.scan_any(&dict));
 
-    let list_data: Vec<String> = OK_PROMPT
-        .split(' ')
-        .map(std::string::ToString::to_string)
-        .collect();
+    let list_data: Vec<String> = OK_PROMPT.split(' ').map(ToString::to_string).collect();
     let list = PyList::new(py, &list_data).unwrap();
 
     assert!(!deny_list.scan_any(&list));
 }
 
+fn check_bad_msgpack<T: deny_rust::matcher::Matcher>(deny_list: &T) {
+    // Empty buffer - caught by safety check at line 61-63
+    let buf: &[u8] = &[];
+    assert!(!deny_list.scan_msgpack(buf));
+
+    // Truncated MessagePack: FixArray claiming 2 elements but only 1 byte of data
+    // 0x92 = fixarray(2), followed by incomplete data
+    // This triggers line 67 when recursive traversal tries to read beyond buffer
+    let buf: &[u8] = &[0x92, 0x01]; // array of 2, but only 1 element present
+    assert!(!deny_list.scan_msgpack(buf));
+}
+fn check_msgpack_ok<T: deny_rust::matcher::Matcher>(deny_list: &T) {
+    let map = Value::Map(vec![
+        (Value::from("id"), Value::from("ok")),
+        (Value::from("user"), Value::from(OK_PROMPT)),
+    ]);
+    let mut buf = Vec::new();
+    write_value(&mut buf, &map).unwrap();
+
+    assert!(!deny_list.scan_msgpack(buf.as_slice()));
+}
+fn check_msgpack_blocked<T: deny_rust::matcher::Matcher>(deny_list: &T) {
+    let map = Value::Map(vec![
+        (Value::from("id"), Value::from("block")),
+        (Value::from("user"), Value::from(BLOCK_PROMPT)),
+    ]);
+    let mut buf = Vec::new();
+    write_value(&mut buf, &map).unwrap();
+
+    assert!(deny_list.scan_msgpack(buf.as_slice()));
+}
+
 #[test]
 fn test_deny_lists() -> PyResult<()> {
-    let words: Vec<String> = DENY_WORDS
-        .iter()
-        .map(std::string::ToString::to_string)
-        .collect();
+    let words: Vec<String> = DENY_WORDS.iter().map(ToString::to_string).collect();
     let deny_list = DenyList::new(words.clone())?;
     let deny_list_rs = DenyListRs::new(words.clone())?;
 

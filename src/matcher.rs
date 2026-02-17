@@ -1,16 +1,11 @@
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList};
-use rmp::decode::{read_array_len, read_map_len, read_marker, read_str_from_slice};
 use rmp::Marker;
+use rmp::decode::{read_array_len, read_map_len, read_marker, read_str_from_slice};
 use std::io::Cursor;
 
 pub trait Matcher {
     fn is_match(&self, s: &str) -> bool;
-
-    /// Shared logic: Scans a string and returns true if match found
-    fn scan_str(&self, txt: &str) -> bool {
-        self.is_match(txt)
-    }
 
     /// Shared logic: Scans single level dictionary
     fn scan(&self, args: &Bound<'_, PyDict>) -> bool {
@@ -52,36 +47,41 @@ pub trait Matcher {
         }
         false
     }
-    ///scans message pack structures for deny words
+    /// Scans message pack structures for deny words
     fn scan_msgpack(&self, value: &[u8]) -> bool {
         let mut cur = Cursor::new(value);
-        // We pass the data slice and the cursor to our recursive validator
-        self.traverse(&mut cur, value)
+        self.traverse(&mut cur, value, true)
     }
 
-    /// scans msgpack bytes for deny words
-    fn traverse(&self, cur: &mut Cursor<&[u8]>, full_data: &[u8]) -> bool {
+    /// Traverses msgpack bytes recursively, returns true if a violation is found
+    fn traverse(&self, cur: &mut Cursor<&[u8]>, full_data: &[u8], check_strings: bool) -> bool {
         let pos = cur.position() as usize;
 
-        // Safety check: don't read past the end of buffer
         if pos >= full_data.len() {
-            return true;
+            return false;
         }
 
         let marker = match read_marker(cur) {
             Ok(m) => m,
-            Err(_) => return false, // Invalid MessagePack structure
+            Err(_) => return false, // difficult to test
         };
 
         match marker {
             // str
             Marker::FixStr(_) | Marker::Str8 | Marker::Str16 | Marker::Str32 => {
-                if let Ok((found_str, consumed)) = read_str_from_slice(&full_data[pos..]) {
-                    println!("{found_str}");
-                    if self.is_match(found_str) {
-                        return true; // violation found
+                let data_slice = &full_data[pos..];
+                if let Ok((found_str, _tail)) = read_str_from_slice(data_slice) {
+                    if check_strings {
+                        //let type_name = std::any::type_name::<Self>();
+                        //println!("check [{}]: {found_str}", type_name.split("::").last().unwrap_or(type_name));
+
+                        if self.is_match(found_str) {
+                            return true; // violation found
+                        }
                     }
-                    cur.set_position((pos + consumed.len()) as u64);
+                    // Advance cursor by the number of bytes consumed
+                    let bytes_consumed = data_slice.len() - _tail.len();
+                    cur.set_position((pos + bytes_consumed) as u64);
                 }
             }
 
@@ -90,7 +90,7 @@ pub trait Matcher {
                 cur.set_position(pos as u64); // Reset to read length
                 if let Ok(len) = read_array_len(cur) {
                     for _ in 0..len {
-                        if self.traverse(cur, full_data) {
+                        if self.traverse(cur, full_data, check_strings) {
                             return true;
                         }
                     }
@@ -102,15 +102,20 @@ pub trait Matcher {
                 cur.set_position(pos as u64);
                 if let Ok(len) = read_map_len(cur) {
                     for _ in 0..len {
-                        if self.traverse(cur, full_data) || !self.traverse(cur, full_data) {
+                        // Traverse key (don't check strings in keys)
+                        if self.traverse(cur, full_data, false) {
+                            return true;
+                        }
+                        // Traverse value (check strings in values)
+                        if self.traverse(cur, full_data, check_strings) {
                             return true;
                         }
                     }
                 }
             }
-            _ => {} // other types
+            _ => {} // other types (int, nil, bool, etc.) - skip
         }
 
-        true
+        false // No violation found
     }
 }

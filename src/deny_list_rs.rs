@@ -30,20 +30,24 @@ impl DenyListRs {
 
         Ok(Self { rs })
     }
+    /// check string for deny word
     #[must_use]
     pub fn is_match(&self, s: &str) -> bool {
         Matcher::is_match(self, s)
     }
-    #[must_use]
-    pub fn scan_str(&self, txt: &str) -> bool {
-        Matcher::scan_str(self, txt)
-    }
+    /// scans one level of dict
     #[must_use]
     pub fn scan(&self, args: &Bound<'_, PyDict>) -> bool {
         Matcher::scan(self, args)
     }
+    /// scans dict,str,list
     #[must_use]
     pub fn scan_any(&self, value: &Bound<'_, PyAny>) -> bool {
         Matcher::scan_any(self, value)
+    }
+    /// scans dict,str,list from msg pack
+    #[must_use]
+    pub fn scan_msgpack(&self, value: &[u8]) -> bool {
+        Matcher::scan_msgpack(self, value)
     }
 }
