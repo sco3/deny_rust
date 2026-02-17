@@ -2,11 +2,12 @@ name: Rust Tools CI/CD
 
 on:
   push:
-    branches: [main, develop]
-    paths: ["./**", ".github/workflows/rust-plugin.yml"]
+    branches: [main]
+    #paths: ["./**", ".github/workflows/rust-plugin.yml"]
   pull_request:
     branches: [main]
-    paths: ["./**"]
+    #paths: ["./**"]
+    types: [opened, synchronize, reopened]
   workflow_dispatch:
 
 env:
