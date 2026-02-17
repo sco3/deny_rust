@@ -105,10 +105,8 @@ async def benchmark_plugin(
     }
 
     for plugin_name, plugin in plugins:
-        plugin_deny_words = []
         for deny_list in config["deny_word_lists"]:
             if deny_list["name"] == plugin_name:
-                plugin_deny_words = deny_list["words"]
                 break
 
         for sample in sample_texts:
