@@ -26,8 +26,7 @@ impl DenyListRs {
     #[new]
     pub fn new(words: Vec<String>) -> PyResult<Self> {
         // Store deny words in lowercase for case-insensitive matching
-        let words_lower: Vec<String> = words.into_iter().map(|w| w.to_lowercase()).collect();
-        let patterns: Vec<String> = words_lower.into_iter().map(|w| escape(&w)).collect();
+        let patterns: Vec<String> = words.into_iter().map(|w| escape(&w.to_lowercase())).collect();
 
         let rs = RegexSet::new(patterns).map_err(build_error)?;
 
