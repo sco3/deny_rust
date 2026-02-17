@@ -37,7 +37,11 @@ jobs:
 
       - name: Run tests & Coverage
         uses: taiki-e/install-action@cargo-llvm-cov
-      - run: cargo llvm-cov --fail-under-lines 80 --summary-only >> $GITHUB_STEP_SUMMARY
+      - run: |
+          echo "### Code Coverage Summary" >> $GITHUB_STEP_SUMMARY
+          echo '```text' >> $GITHUB_STEP_SUMMARY
+          cargo llvm-cov --fail-under-lines 99 --summary-only >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
   licenses-audit:
     name: Licenses Audit
