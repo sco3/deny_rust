@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import List, Dict, Any, Type, Protocol, runtime_checkable
 
 import pytest
-from mcpgateway.plugins.framework import PluginConfig, Plugin, PluginContext
+from mcpgateway.plugins.framework import PluginConfig, PluginContext
 from mcpgateway.plugins.framework.hooks.prompts import (
     PromptHookType,
     PromptPrehookPayload,
@@ -30,13 +30,12 @@ class PromptPreFetchPlugin(Protocol):
     """Protocol for plugins that implement prompt_pre_fetch hook."""
 
     def __init__(
-            self,
-            config: PluginConfig,
-    ) -> None:
-        ...
+        self,
+        config: PluginConfig,
+    ) -> None: ...
 
     async def prompt_pre_fetch(
-            self, payload: PromptPrehookPayload, context: PluginContext
+        self, payload: PromptPrehookPayload, context: PluginContext
     ) -> PromptPrehookResult:
         """The plugin hook run before a prompt is retrieved and rendered."""
         ...
@@ -75,7 +74,7 @@ def load_config(config_path: str) -> Dict[str, Any]:
 
 
 def create_plugin_instances(
-        config: Dict[str, Any], plugin_type: Type[PromptPreFetchPlugin]
+    config: Dict[str, Any], plugin_type: Type[PromptPreFetchPlugin]
 ) -> List[tuple[str, PromptPreFetchPlugin]]:
     """Create plugin instances for each deny word list."""
     plugins: List[tuple[str, PromptPreFetchPlugin]] = []
@@ -96,11 +95,11 @@ def create_plugin_instances(
 
 
 async def benchmark_plugin(
-        plugins: List[tuple[str, PromptPreFetchPlugin]],
-        sample_texts: List[Dict[str, Any]],
-        config: Dict[str, Any],
-        warmup_runs: int = WARMUP_RUNS,
-        benchmark_runs: int = BENCHMARK_RUNS,
+    plugins: List[tuple[str, PromptPreFetchPlugin]],
+    sample_texts: List[Dict[str, Any]],
+    config: Dict[str, Any],
+    warmup_runs: int = WARMUP_RUNS,
+    benchmark_runs: int = BENCHMARK_RUNS,
 ) -> Dict[str, Any]:
     """Benchmark prompt_pre_fetch execution for all combinations."""
     import time
@@ -199,8 +198,8 @@ def get_cpu_info() -> str:
 
 
 def print_markdown_table(
-        all_config_results: List[Dict[str, Any]],
-        impls: List[Type[PromptPreFetchPlugin]],
+    all_config_results: List[Dict[str, Any]],
+    impls: List[Type[PromptPreFetchPlugin]],
 ):
     """Print results in Markdown table format similar to README.
 
@@ -477,5 +476,5 @@ async def test_benchmark_comparison():
                 ]
 
                 assert (
-                        len(mismatches) == 0
+                    len(mismatches) == 0
                 ), f"{impl_name} implementation has {len(mismatches)} mismatches in {config_result['config_path']}"
