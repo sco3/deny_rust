@@ -17,7 +17,7 @@ from mcpgateway.plugins.framework import (
 )
 from mcpgateway.services.logging_service import LoggingService
 
-import deny_rust
+from deny_filter import DenyListRs
 from plugins.deny_filter.deny import DenyListConfig, DenyListPlugin
 
 # Initialize logging service first
@@ -36,7 +36,7 @@ class DenyListPluginRust(DenyListPlugin):
         """
         super().__init__(config)
         self._dconfig = DenyListConfig.model_validate(self._config.config)
-        self._deny_list = deny_rust.DenyList(self._dconfig.words)
+        self._deny_list = DenyListRs(self._dconfig.words)
 
     async def prompt_pre_fetch(
             self, payload: PromptPrehookPayload, _context: PluginContext

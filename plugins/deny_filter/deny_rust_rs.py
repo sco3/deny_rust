@@ -11,6 +11,7 @@ This module loads configurations for plugins.
 # Third-Party
 
 # First-Party
+from deny_filter import DenyListRs
 from mcpgateway.plugins.framework import (
     PluginConfig,
     PluginContext,
@@ -20,8 +21,6 @@ from mcpgateway.plugins.framework import (
 )
 from mcpgateway.services.logging_service import LoggingService
 from plugins.deny_filter.deny import DenyListConfig, DenyListPlugin
-
-import deny_rust
 
 # Initialize logging service first
 logging_service = LoggingService()
@@ -39,7 +38,7 @@ class DenyListPluginRustRs(DenyListPlugin):
         """
         super().__init__(config)
         self._dconfig = DenyListConfig.model_validate(self._config.config)
-        self._deny_list = deny_rust.DenyListRs(self._dconfig.words)
+        self._deny_list = DenyListRs(self._dconfig.words)
 
     async def prompt_pre_fetch(
         self, payload: PromptPrehookPayload, context: PluginContext

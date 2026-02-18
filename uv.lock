@@ -575,7 +575,7 @@ wheels = [
 ]
 
 [[package]]
-name = "deny-rust"
+name = "deny-filter"
 version = "1.0.0b2"
 source = { editable = "." }
 dependencies = [

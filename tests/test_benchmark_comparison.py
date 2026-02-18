@@ -46,7 +46,7 @@ class PromptPreFetchPlugin(Protocol):
     """Protocol for plugins that implement prompt_pre_fetch hook."""
 
     async def prompt_pre_fetch(
-            self, payload: PromptPrehookPayload, context: PluginContext
+        self, payload: PromptPrehookPayload, context: PluginContext
     ) -> PromptPrehookResult:
         """The plugin hook run before a prompt is retrieved and rendered."""
         ...
@@ -63,7 +63,7 @@ def load_config(config_path: str) -> Dict[str, Any]:
 
 
 def create_plugin_instances(
-        config: Dict[str, Any], plugin_type: Type[Plugin]
+    config: Dict[str, Any], plugin_type: Type[Plugin]
 ) -> List[tuple[str, PromptPreFetchPlugin]]:
     """Create plugin instances for each deny word list."""
     plugins = []
@@ -84,11 +84,11 @@ def create_plugin_instances(
 
 
 async def benchmark_plugin(
-        plugins: List[tuple[str, PromptPreFetchPlugin]],
-        sample_texts: List[Dict[str, Any]],
-        config: Dict[str, Any],
-        warmup_runs: int = WARMUP_RUNS,
-        benchmark_runs: int = BENCHMARK_RUNS,
+    plugins: List[tuple[str, PromptPreFetchPlugin]],
+    sample_texts: List[Dict[str, Any]],
+    config: Dict[str, Any],
+    warmup_runs: int = WARMUP_RUNS,
+    benchmark_runs: int = BENCHMARK_RUNS,
 ) -> Dict[str, Any]:
     """Benchmark prompt_pre_fetch execution for all combinations."""
     import time
@@ -187,8 +187,8 @@ def get_cpu_info() -> str:
 
 
 def print_markdown_table(
-        all_config_results: List[Dict[str, Any]],
-        impls: List[Type[Plugin]],
+    all_config_results: List[Dict[str, Any]],
+    impls: List[Type[Plugin]],
 ):
     """Print results in Markdown table format similar to README.
 
@@ -360,7 +360,9 @@ async def test_benchmark_comparison():
                 impl_name = impl.__name__
                 impl_results = run_data[impl_name]
 
-                medians = [c["timings"]["median_us"] for c in impl_results["combinations"]]
+                medians = [
+                    c["timings"]["median_us"] for c in impl_results["combinations"]
+                ]
                 p99s = [c["timings"]["p99_us"] for c in impl_results["combinations"]]
 
                 all_impl_medians[impl_name].append(statistics.median(medians))
@@ -371,9 +373,7 @@ async def test_benchmark_comparison():
         avg_medians = {
             name: statistics.mean(vals) for name, vals in all_impl_medians.items()
         }
-        avg_p99s = {
-            name: statistics.mean(vals) for name, vals in all_impl_p99s.items()
-        }
+        avg_p99s = {name: statistics.mean(vals) for name, vals in all_impl_p99s.items()}
         avg_totals = {
             name: statistics.mean(vals) for name, vals in all_impl_totals.items()
         }
@@ -387,7 +387,12 @@ async def test_benchmark_comparison():
             formatted_p99 = f"{avg_p99s[name]:.2f}μs"
             formatted_total = f"{avg_totals[name] / 1_000_000:.6f}s"
             impl_col_widths.append(
-                max(len(name), len(formatted_median), len(formatted_p99), len(formatted_total))
+                max(
+                    len(name),
+                    len(formatted_median),
+                    len(formatted_p99),
+                    len(formatted_total),
+                )
             )
 
         # Print comparison table
@@ -431,9 +436,7 @@ async def test_benchmark_comparison():
                 avg_p99s[first_name] / avg_p99s[name] if avg_p99s[name] > 0 else 0
             )
             total_speedup = (
-                avg_totals[first_name] / avg_totals[name]
-                if avg_totals[name] > 0
-                else 0
+                avg_totals[first_name] / avg_totals[name] if avg_totals[name] > 0 else 0
             )
             print(
                 f"  {name}: {median_speedup:.2f}x (median), {p99_speedup:.2f}x (p99), {total_speedup:.2f}x (total)"
@@ -456,5 +459,5 @@ async def test_benchmark_comparison():
                 ]
 
                 assert (
-                        len(mismatches) == 0
+                    len(mismatches) == 0
                 ), f"{impl_name} implementation has {len(mismatches)} mismatches in {config_result['config_path']}"

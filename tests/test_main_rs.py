@@ -3,13 +3,13 @@
 Pytest conversion of main_rs.py samples.
 """
 
-import deny_rust
 import pytest
 from mcpgateway.plugins.framework import PluginContext, PluginConfig
 from mcpgateway.plugins.framework.hooks.prompts import PromptHookType
 from mcpgateway.plugins.framework.hooks.prompts import PromptPrehookPayload
 from mcpgateway.plugins.framework.models import GlobalContext
 
+from deny_filter import DenyList
 from plugins.deny_filter.deny_rust import DenyListPluginRust
 
 
@@ -17,7 +17,7 @@ from plugins.deny_filter.deny_rust import DenyListPluginRust
 def deny_list():
     """Create a DenyList with test words."""
     words = ["malware", "danger", "secret"]
-    return deny_rust.DenyList(words)
+    return DenyList(words)
 
 
 @pytest.fixture

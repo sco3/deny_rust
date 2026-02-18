@@ -1,5 +1,5 @@
 [project]
-name = "deny-rust"
+name = "deny_filter"
 version = "1.0.0-BETA-2"
 description = "Add your description here"
 readme = "README.md"
@@ -16,8 +16,8 @@ build-backend = "maturin"
 [tool.maturin]
 # This tells maturin which features to use when uv builds it
 features = ["pyo3/extension-module"]
-module-name = "deny_rust"
-include = ["deny_rust/*.pyi", "deny_rust/py.typed"]
+module-name = "deny_filter"
+include = ["deny_filter/*.pyi", "deny_filter/py.typed"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
@@ -37,3 +37,6 @@ dev = [
     "pyrefly>=0.52.0",
     "ruff>=0.15.1",
 ]
+
+[tool.pyrefly]
+# site-package-path = ["./stubs"]
