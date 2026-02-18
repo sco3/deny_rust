@@ -97,30 +97,6 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v5
 
-      - name: Display Hardware Information
-        run: |
-          echo "## Hardware Information" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### CPU Info" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          lscpu | grep -E "^(Architecture|CPU op-mode|Model name|CPU\(s\)|Thread|Core|Socket|L1d cache|L1i cache|L2 cache|L3 cache)" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Memory Info" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          free -h >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### System Info" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          uname -a >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Disk Space" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          df -h / >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-
       - name: Install dependencies
         run: uv sync --frozen
 
@@ -128,7 +104,9 @@ jobs:
         run: uv run maturin develop --release
 
       - name: Run pytest
-        run: uv run pytest -v -s >> $GITHUB_STEP_SUMMARY
+        run: |
+          set -o pipefail
+          uv run pytest -v -s | grep -E "CPU:|\|" | tee -a $GITHUB_STEP_SUMMARY
 
       - name: Ruff check
         run: uv run ruff check
