@@ -27,7 +27,7 @@ impl Matcher for DenyListDaac {
 impl DenyListDaac {
     /// constructor
     /// # Errors
-    /// * aho-corasic errors (too long patterns)
+    /// * daachorse errors (e.g. too long patterns)
     #[new]
     pub fn new(words: Vec<String>) -> PyResult<Self> {
         // Store deny words in lowercase for case-insensitive matching
