@@ -1,6 +1,5 @@
 """Pytest configuration for automatic benchmark comparison."""
 
-import pytest
 from statistics import mean
 
 

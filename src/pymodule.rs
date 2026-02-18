@@ -7,7 +7,7 @@ use pyo3::prelude::*;
 /// python module compose
 /// # Errors
 /// * methods not found
-pub fn deny_rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
+pub fn deny_filter(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<DenyList>()?;
     m.add_class::<DenyListRs>()?;
     Ok(())

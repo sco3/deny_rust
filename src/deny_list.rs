@@ -1,12 +1,14 @@
 use aho_corasick::{AhoCorasick, MatchKind};
 use pyo3::prelude::*;
+use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
 
 use crate::build_error::build_error;
 use crate::matcher::Matcher;
 use pyo3::pyclass;
 use pyo3::types::PyDict;
 
-#[pyclass(from_py_object)]
+#[gen_stub_pyclass]
+#[pyclass(skip_from_py_object)]
 #[derive(Clone)]
 pub struct DenyList {
     pub ac: AhoCorasick,
@@ -15,10 +17,12 @@ pub struct DenyList {
 impl Matcher for DenyList {
     /// implements match with aho-corasic
     fn is_match(&self, s: &str) -> bool {
-        self.ac.is_match(s)
+        // Convert input to lowercase for case-insensitive matching
+        self.ac.is_match(&s.to_lowercase())
     }
 }
 
+#[gen_stub_pymethods]
 #[pymethods]
 impl DenyList {
     /// constructor
@@ -26,9 +30,12 @@ impl DenyList {
     /// * aho-corasic errors (too long patterns)
     #[new]
     pub fn new(words: Vec<String>) -> PyResult<Self> {
+        // Store deny words in lowercase for case-insensitive matching
+        let words_lower: Vec<String> = words.into_iter().map(|w| w.to_lowercase()).collect();
+
         let ac = AhoCorasick::builder()
             .match_kind(MatchKind::LeftmostFirst)
-            .build(words)
+            .build(words_lower)
             .map_err(build_error)?;
 
         Ok(Self { ac })

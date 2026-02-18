@@ -4,11 +4,13 @@ Pytest-based benchmark comparison between Python and Rust deny list implementati
 This test always displays detailed output regardless of pytest flags.
 """
 
-import asyncio
 import json
-import pytest
-import statistics
 import logging
+import statistics
+from pathlib import Path
+from typing import List, Dict, Any, Type, Protocol, runtime_checkable
+
+import pytest
 from mcpgateway.plugins.framework import PluginConfig, Plugin, PluginContext
 from mcpgateway.plugins.framework.hooks.prompts import (
     PromptHookType,
@@ -16,21 +18,17 @@ from mcpgateway.plugins.framework.hooks.prompts import (
     PromptPrehookResult,
 )
 from mcpgateway.plugins.framework.models import GlobalContext
-from pathlib import Path
-from typing import List, Dict, Any, Type, Protocol, runtime_checkable
+from mcpgateway.services.logging_service import LoggingService
 
 from plugins.deny_filter.deny import DenyListPlugin
 from plugins.deny_filter.deny_rust import DenyListPluginRust
 from plugins.deny_filter.deny_rust_rs import DenyListPluginRustRs
-
-from mcpgateway.services.logging_service import LoggingService
 
 # Initialize logging service first
 loggingSvc = LoggingService()
 loggingSvc.get_logger("plugins.deny_filter.deny").setLevel(logging.ERROR)
 loggingSvc.get_logger("plugins.deny_filter.deny_rust").setLevel(logging.ERROR)
 loggingSvc.get_logger("plugins.deny_filter.deny_rust_rs").setLevel(logging.ERROR)
-
 
 WARMUP_RUNS = 3000
 BENCHMARK_RUNS = 10000
@@ -40,7 +38,12 @@ CONFIG_FILES = [
     "data/deny_check_config_200.json",
 ]
 RUNS_PER_CONFIG = 1
-ALL_IMPLS = [DenyListPlugin, DenyListPluginRustRs, DenyListPluginRust]
+ALL_IMPLS: List[Type[Plugin]] = [
+    DenyListPlugin,
+    DenyListPluginRustRs,
+    DenyListPluginRust,
+]
+
 
 @runtime_checkable
 class PromptPreFetchPlugin(Protocol):
@@ -65,7 +68,7 @@ def load_config(config_path: str) -> Dict[str, Any]:
 
 def create_plugin_instances(
     config: Dict[str, Any], plugin_type: Type[Plugin]
-) -> List[tuple[str, PromptPreFetchPlugin]]:
+) -> List[tuple[str, Plugin]]:
     """Create plugin instances for each deny word list."""
     plugins = []
 
@@ -85,7 +88,7 @@ def create_plugin_instances(
 
 
 async def benchmark_plugin(
-    plugins: List[tuple[str, PromptPreFetchPlugin]],
+    plugins: List[tuple[str, Plugin]],
     sample_texts: List[Dict[str, Any]],
     config: Dict[str, Any],
     warmup_runs: int = WARMUP_RUNS,
@@ -97,7 +100,7 @@ async def benchmark_plugin(
     gctx = GlobalContext(request_id="deny-benchmark")
     ctx = PluginContext(global_context=gctx)
 
-    results = {
+    results: Dict[str, Any] = {
         "total_combinations": len(plugins) * len(sample_texts),
         "warmup_runs": warmup_runs,
         "benchmark_runs": benchmark_runs,
@@ -106,10 +109,8 @@ async def benchmark_plugin(
     }
 
     for plugin_name, plugin in plugins:
-        plugin_deny_words = []
         for deny_list in config["deny_word_lists"]:
             if deny_list["name"] == plugin_name:
-                plugin_deny_words = deny_list["words"]
                 break
 
         for sample in sample_texts:
@@ -127,7 +128,7 @@ async def benchmark_plugin(
 
             # Warmup
             for _ in range(warmup_runs):
-                await plugin.prompt_pre_fetch(payload, ctx)
+                await plugin.prompt_pre_fetch(payload, ctx)  # type: ignore[attr-defined]
 
             # Benchmark
             timings_us = []
@@ -135,7 +136,7 @@ async def benchmark_plugin(
 
             for i in range(benchmark_runs):
                 start = time.perf_counter()
-                result = await plugin.prompt_pre_fetch(payload, ctx)
+                result = await plugin.prompt_pre_fetch(payload, ctx)  # type: ignore[attr-defined]
                 elapsed = time.perf_counter() - start
                 timings_us.append(elapsed * 1_000_000)
 
@@ -151,7 +152,7 @@ async def benchmark_plugin(
             min_time = min(timings_us)
             total_time_combination = sum(timings_us)
 
-            combination_result = {
+            combination_result: Dict[str, Any] = {
                 "plugin_name": plugin_name,
                 "sample_name": sample["name"],
                 "sample_text_length": len(sample["text"]),
@@ -173,6 +174,22 @@ async def benchmark_plugin(
     return results
 
 
+def get_cpu_info() -> str:
+    """Get CPU model information.
+
+    Returns:
+        CPU model string (e.g., 'Intel Core i5-12500' or 'AMD Ryzen 7 5800X').
+    """
+    try:
+        with open("/proc/cpuinfo", "r") as f:
+            for line in f:
+                if line.startswith("model name"):
+                    return line.split(":", 1)[1].strip()
+    except (FileNotFoundError, IOError):
+        pass
+    return "CPU info unavailable"
+
+
 def print_markdown_table(
     all_config_results: List[Dict[str, Any]],
     impls: List[Type[Plugin]],
@@ -186,7 +203,6 @@ def print_markdown_table(
     print("\n" + "=" * 80)
     print("MARKDOWN TABLE OUTPUT (for README)")
     print("=" * 80)
-
     impl_names = [impl.__name__ for impl in impls]
 
     # Build header dynamically: first impl is baseline, others show speedup vs baseline
@@ -203,6 +219,11 @@ def print_markdown_table(
             separator_parts.append(":---------")
 
     print("\n### Performance Comparison\n")
+
+    # Print CPU info
+    cpu_info = get_cpu_info()
+    print(f"\n**CPU:** {cpu_info}\n")
+
     print("| " + " | ".join(header_parts) + " |")
     print("| " + " | ".join(separator_parts) + " |")
 
@@ -263,7 +284,7 @@ async def test_benchmark_comparison():
     print("=" * 80)
 
     # Store all results for final summary
-    all_config_results = []
+    all_config_results: list[dict[str, Any]] = []
 
     for config_path in CONFIG_FILES:
         config = load_config(config_path)
@@ -285,7 +306,7 @@ async def test_benchmark_comparison():
                 f"\n--- Run {run_num}/{RUNS_PER_CONFIG} for {word_count} words config ---"
             )
 
-            run_results = {"run": run_num}
+            run_results: Dict[str, Any] = {"run": run_num}
 
             # Benchmark all implementations
             for impl in ALL_IMPLS:
@@ -317,9 +338,9 @@ async def test_benchmark_comparison():
     print("=" * 80)
 
     for config_result in all_config_results:
-        word_count = config_result["word_count"]
-        config = config_result["config"]
-        runs = config_result["runs"]
+        word_count: int = config_result["word_count"]
+        config: Dict[str, Any] = config_result["config"]
+        runs: List[Dict[str, Any]] = config_result["runs"]
 
         print(f"\n{'=' * 80}")
         print(f"Configuration: {word_count} words")
@@ -334,16 +355,24 @@ async def test_benchmark_comparison():
             print("-" * 80)
 
         # Aggregate results across all runs for all implementations
-        all_impl_medians = {impl.__name__: [] for impl in ALL_IMPLS}
-        all_impl_p99s = {impl.__name__: [] for impl in ALL_IMPLS}
-        all_impl_totals = {impl.__name__: [] for impl in ALL_IMPLS}
+        all_impl_medians: Dict[str, List[float]] = {
+            impl.__name__: [] for impl in ALL_IMPLS
+        }
+        all_impl_p99s: Dict[str, List[float]] = {
+            impl.__name__: [] for impl in ALL_IMPLS
+        }
+        all_impl_totals: Dict[str, List[float]] = {
+            impl.__name__: [] for impl in ALL_IMPLS
+        }
 
         for run_data in runs:
             for impl in ALL_IMPLS:
                 impl_name = impl.__name__
-                impl_results = run_data[impl_name]
+                impl_results: Dict[str, Any] = run_data[impl_name]
 
-                medians = [c["timings"]["median_us"] for c in impl_results["combinations"]]
+                medians = [
+                    c["timings"]["median_us"] for c in impl_results["combinations"]
+                ]
                 p99s = [c["timings"]["p99_us"] for c in impl_results["combinations"]]
 
                 all_impl_medians[impl_name].append(statistics.median(medians))
@@ -354,9 +383,7 @@ async def test_benchmark_comparison():
         avg_medians = {
             name: statistics.mean(vals) for name, vals in all_impl_medians.items()
         }
-        avg_p99s = {
-            name: statistics.mean(vals) for name, vals in all_impl_p99s.items()
-        }
+        avg_p99s = {name: statistics.mean(vals) for name, vals in all_impl_p99s.items()}
         avg_totals = {
             name: statistics.mean(vals) for name, vals in all_impl_totals.items()
         }
@@ -368,9 +395,14 @@ async def test_benchmark_comparison():
             # Compute sample formatted strings to determine actual width needed
             formatted_median = f"{avg_medians[name]:.2f}μs"
             formatted_p99 = f"{avg_p99s[name]:.2f}μs"
-            formatted_total = f"{avg_totals[name]/1_000_000:.6f}s"
+            formatted_total = f"{avg_totals[name] / 1_000_000:.6f}s"
             impl_col_widths.append(
-                max(len(name), len(formatted_median), len(formatted_p99), len(formatted_total))
+                max(
+                    len(name),
+                    len(formatted_median),
+                    len(formatted_p99),
+                    len(formatted_total),
+                )
             )
 
         # Print comparison table
@@ -414,9 +446,7 @@ async def test_benchmark_comparison():
                 avg_p99s[first_name] / avg_p99s[name] if avg_p99s[name] > 0 else 0
             )
             total_speedup = (
-                avg_totals[first_name] / avg_totals[name]
-                if avg_totals[name] > 0
-                else 0
+                avg_totals[first_name] / avg_totals[name] if avg_totals[name] > 0 else 0
             )
             print(
                 f"  {name}: {median_speedup:.2f}x (median), {p99_speedup:.2f}x (p99), {total_speedup:.2f}x (total)"

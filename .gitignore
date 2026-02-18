@@ -9,3 +9,5 @@ scalene*
 /.pytest_cache/
 /.venv/
 /tests/.benchmarks
+**/*.so
+

@@ -1,4 +1,4 @@
-name: Rust Tools CI/CD
+name: Rust Plugin CI/CD
 
 on:
   push:
@@ -72,13 +72,13 @@ jobs:
         uses: taiki-e/install-action@cargo-llvm-cov
       - name: Generate Coverage Summary
         run: |
-          cargo llvm-cov --summary-only --no-clean > /tmp/cov-summary.txt
+          cargo llvm-cov --summary-only --no-clean --ignore-filename-regex "bin/.*" > /tmp/cov-summary.txt
           echo "### Code Coverage Summary" >> $GITHUB_STEP_SUMMARY
           echo '```text' >> $GITHUB_STEP_SUMMARY
           cat /tmp/cov-summary.txt >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
       - name: Enforce Coverage Threshold
-        run: cargo llvm-cov report --fail-under-lines 90
+        run: cargo llvm-cov report --fail-under-lines 90 --ignore-filename-regex "bin/.*"
 
   python-tests:
     name: Python Tests
@@ -97,30 +97,6 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v5
 
-      - name: Display Hardware Information
-        run: |
-          echo "## Hardware Information" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### CPU Info" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          lscpu | grep -E "^(Architecture|CPU op-mode|Model name|CPU\(s\)|Thread|Core|Socket|L1d cache|L1i cache|L2 cache|L3 cache)" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Memory Info" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          free -h >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### System Info" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          uname -a >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Disk Space" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          df -h / >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-
       - name: Install dependencies
         run: uv sync --frozen
 
@@ -128,7 +104,15 @@ jobs:
         run: uv run maturin develop --release
 
       - name: Run pytest
-        run: uv run pytest -v -s >> $GITHUB_STEP_SUMMARY
+        run: |
+          set -o pipefail
+          uv run pytest -v -s | grep -E "CPU:|\|" | tee -a $GITHUB_STEP_SUMMARY
+
+      - name: Ruff check
+        run: uv run ruff check
+
+      - name: Pyrefly check
+        run: uv run pyrefly check
 
   licenses-audit:
     name: Licenses Audit

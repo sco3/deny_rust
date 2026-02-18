@@ -7,12 +7,10 @@ Authors: Fred Araujo, Dmitry Zakharov
 Simple example plugin for searching and replacing text.
 """
 
-# Third-Party
-from pydantic import BaseModel
-
 # First-Party
+from typing import Any
+
 from mcpgateway.plugins.framework import (
-    Plugin,
     PluginConfig,
     PluginContext,
     PluginViolation,
@@ -20,16 +18,16 @@ from mcpgateway.plugins.framework import (
     PromptPrehookResult,
 )
 from mcpgateway.services.logging_service import LoggingService
-from plugins.deny_filter.deny import DenyListConfig
 
-import deny_rust
+from deny_filter import DenyList
+from plugins.deny_filter.deny import DenyListConfig, DenyListPlugin
 
 # Initialize logging service first
 logging_service = LoggingService()
 logger = logging_service.get_logger(__name__)
 
 
-class DenyListPluginRust(Plugin):
+class DenyListPluginRust(DenyListPlugin):
     """Example deny list plugin."""
 
     def __init__(self, config: PluginConfig):
@@ -40,7 +38,7 @@ class DenyListPluginRust(Plugin):
         """
         super().__init__(config)
         self._dconfig = DenyListConfig.model_validate(self._config.config)
-        self._deny_list = deny_rust.DenyList(self._dconfig.words)
+        self._deny_list: Any = DenyList(self._dconfig.words)
 
     async def prompt_pre_fetch(
         self, payload: PromptPrehookPayload, context: PluginContext
@@ -55,7 +53,7 @@ class DenyListPluginRust(Plugin):
             The result of the plugin's analysis, including whether the prompt can proceed.
         """
         if payload.args:
-            if self._deny_list.scan(payload.args):
+            if self._deny_list.scan_any(payload.args):
                 violation = PluginViolation(
                     reason="Prompt not allowed",
                     description="A deny word was found in the prompt",
@@ -69,7 +67,3 @@ class DenyListPluginRust(Plugin):
                     continue_processing=False,
                 )
         return PromptPrehookResult(modified_payload=payload)
-
-    async def shutdown(self) -> None:
-        """Cleanup when plugin shuts down."""
-        logger.info("Deny list plugin shutting down")

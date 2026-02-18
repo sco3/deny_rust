@@ -1,19 +1,19 @@
 mod test_py_deny_list;
 
-use deny_rust::deny_list::DenyList;
-use deny_rust::deny_list_rs::DenyListRs;
+use deny_filter::deny_list::DenyList;
+use deny_filter::deny_list_rs::DenyListRs;
 
-use deny_rust::build_error::build_error;
-use deny_rust::pymodule::deny_rust as dr;
+use deny_filter::build_error::build_error;
+use deny_filter::pymodule::deny_filter as dr;
 use pyo3::PyResult;
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList};
 
-const DENY_WORDS: &[&str] = &["asdf", "jkl"];
+const DENY_WORDS: &[&str] = &["ASDF", "JKL"];
 const BLOCK_PROMPT: &str = "111  asdf 222";
 const OK_PROMPT: &str = "111 222 333";
 
-fn common_test_logic<T: deny_rust::matcher::Matcher>(deny_list: &T, py: Python) {
+fn common_test_logic<T: deny_filter::matcher::Matcher>(deny_list: &T, py: Python) {
     assert!(deny_list.is_match("111  asdf  222"));
     assert!(deny_list.is_match("111  asdf  222 jkl"));
     assert!(!deny_list.is_match("111 222"));
