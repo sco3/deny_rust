@@ -284,7 +284,7 @@ async def test_benchmark_comparison():
     print("=" * 80)
 
     # Store all results for final summary
-    all_config_results = []
+    all_config_results: list[dict[str, Any]] = []
 
     for config_path in CONFIG_FILES:
         config = load_config(config_path)
@@ -323,7 +323,6 @@ async def test_benchmark_comparison():
             config_run_results.append(run_results)
 
         # Store results for this config
-        all_config_results: List[Dict[str, Any]] = []
         all_config_results.append(
             {
                 "config_path": config_path,
