@@ -1,4 +1,4 @@
-name: Rust Tools CI/CD
+name: Rust Plugin CI/CD
 
 on:
   push:
