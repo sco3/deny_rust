@@ -58,7 +58,7 @@ AMD EPYC 7763 64-Core:
 | 10          |          16.39μs |           3.66μs |     4.48x |           3.61μs |     4.54x |
 | 100         |         709.86μs |          25.13μs |    28.25x |          10.00μs |    71.02x |
 | 200         |        1547.06μs |          26.20μs |    59.06x |          36.27μs |    42.66x |
-<!-- BENCHMARK_TABLE_END -->
+<!-- BENCHMARK_TABLE_END  -->
 
 12th Gen Intel(R) Core(TM) i5-12500H:
 
