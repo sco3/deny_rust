@@ -1,8 +1,8 @@
 use crate::build_error::build_error;
 use crate::matcher::Matcher;
-use daachorse::MatchKind;
 use daachorse::charwise::CharwiseDoubleArrayAhoCorasick as Daac;
 use daachorse::charwise::CharwiseDoubleArrayAhoCorasickBuilder as DaacBuilder;
+use daachorse::MatchKind;
 use pyo3::prelude::*;
 use pyo3::pyclass;
 use pyo3::types::PyDict;
@@ -34,7 +34,7 @@ impl DenyListDaac {
         let words_lower: Vec<String> = words.into_iter().map(|w| w.to_lowercase()).collect();
 
         let daac = DaacBuilder::new()
-            .match_kind(MatchKind::LeftmostFirst)
+            .match_kind(MatchKind::Standard)
             .build(words_lower)
             .map_err(build_error)?;
 
