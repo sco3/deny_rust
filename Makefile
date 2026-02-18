@@ -21,9 +21,9 @@ help:
 .PHONY: clean-cache
 # help: clean-cache		- Clean uv cache for pyo3 module
 clean-cache:
-	find ~/.cache/uv -name deny_rust* -exec rm -rf \{\} \; || echo "not found"
-	find .venv -name deny_rust* -exec rm -rf \{\} \; || echo "not found"
-	@uv cache clean deny_rust
+	find ~/.cache/uv -name deny_filter* -exec rm -rf \{\} \; || echo "not found"
+	find .venv -name deny_filter* -exec rm -rf \{\} \; || echo "not found"
+	@uv cache clean deny_filter
 
 # =============================================================================
 # BUILD
@@ -33,13 +33,16 @@ clean-cache:
 
 # help: build b			- Run cargo build
 build b: clean-cache
-	@echo "Running cargo build..."
+	@echo "Running build..."
+	@cargo run --bin stub_gen
 	@uv run maturin build
+	
 
 
 # help: build-release br	- Run cargo build --release
 build-release br: clean-cache
-	@echo "Running cargo build --release..."
+	@echo "Running build release..."
+	@cargo run --bin stub_gen --release 
 	@uv run maturin build --release
 
 # =============================================================================

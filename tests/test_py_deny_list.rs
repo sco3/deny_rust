@@ -1,4 +1,5 @@
 use deny_filter::deny_list::DenyList;
+use deny_filter::deny_list_daac::DenyListDaac;
 use deny_filter::deny_list_rs::DenyListRs;
 use pyo3::prelude::*;
 
@@ -27,3 +28,4 @@ macro_rules! test_matcher_variant {
 
 test_matcher_variant!(DenyList, test_denylist_coverage);
 test_matcher_variant!(DenyListRs, test_denylist_rs_coverage);
+test_matcher_variant!(DenyListDaac, test_denylist_daac_coverage);

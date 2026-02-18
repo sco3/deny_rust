@@ -1,6 +1,8 @@
 use crate::build_error::build_error;
 use crate::matcher::Matcher;
-use daachorse::DoubleArrayAhoCorasick;
+use daachorse::charwise::CharwiseDoubleArrayAhoCorasick as Daac;
+use daachorse::charwise::CharwiseDoubleArrayAhoCorasickBuilder as DaacBuilder;
+use daachorse::MatchKind;
 use pyo3::prelude::*;
 use pyo3::pyclass;
 use pyo3::types::PyDict;
@@ -9,7 +11,7 @@ use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
 #[gen_stub_pyclass]
 #[pyclass(skip_from_py_object)]
 pub struct DenyListDaac {
-    pub daac: DoubleArrayAhoCorasick<usize>,
+    pub daac: Daac<usize>,
 }
 
 impl Matcher for DenyListDaac {
@@ -31,7 +33,10 @@ impl DenyListDaac {
         // Store deny words in lowercase for case-insensitive matching
         let words_lower: Vec<String> = words.into_iter().map(|w| w.to_lowercase()).collect();
 
-        let daac = DoubleArrayAhoCorasick::new(words_lower).map_err(build_error)?;
+        let daac = DaacBuilder::new()
+            .match_kind(MatchKind::LeftmostFirst)
+            .build(words_lower)
+            .map_err(build_error)?;
 
         Ok(Self { daac })
     }

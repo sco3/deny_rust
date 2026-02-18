@@ -23,7 +23,7 @@ logging_service = LoggingService()
 logger = logging_service.get_logger(__name__)
 
 
-class DenyListPluginRustRs(DenyListPluginRust):
+class DenyListPluginRustDaac(DenyListPluginRust):
     """Example deny list plugin."""
 
     def __init__(self, config: PluginConfig):

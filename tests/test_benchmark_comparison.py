@@ -23,12 +23,14 @@ from mcpgateway.services.logging_service import LoggingService
 from plugins.deny_filter.deny import DenyListPlugin
 from plugins.deny_filter.deny_rust import DenyListPluginRust
 from plugins.deny_filter.deny_rust_rs import DenyListPluginRustRs
+from plugins.deny_filter.deny_rust_daac import DenyListPluginRustDaac
 
 # Initialize logging service first
 loggingSvc = LoggingService()
 loggingSvc.get_logger("plugins.deny_filter.deny").setLevel(logging.ERROR)
 loggingSvc.get_logger("plugins.deny_filter.deny_rust").setLevel(logging.ERROR)
 loggingSvc.get_logger("plugins.deny_filter.deny_rust_rs").setLevel(logging.ERROR)
+loggingSvc.get_logger("plugins.deny_filter.deny_rust_daac").setLevel(logging.ERROR)
 
 WARMUP_RUNS = 3000
 BENCHMARK_RUNS = 10000
@@ -40,8 +42,8 @@ CONFIG_FILES = [
 RUNS_PER_CONFIG = 1
 ALL_IMPLS: List[Type[Plugin]] = [
     DenyListPlugin,
-    DenyListPluginRustRs,
     DenyListPluginRust,
+    DenyListPluginRustRs,
 ]
 
 
