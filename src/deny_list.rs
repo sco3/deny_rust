@@ -8,7 +8,7 @@ use pyo3::pyclass;
 use pyo3::types::PyDict;
 
 #[gen_stub_pyclass]
-#[pyclass(from_py_object)]
+#[pyclass(skip_from_py_object)]
 #[derive(Clone)]
 pub struct DenyList {
     pub ac: AhoCorasick,
