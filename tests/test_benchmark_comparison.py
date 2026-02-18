@@ -38,7 +38,11 @@ CONFIG_FILES = [
     "data/deny_check_config_200.json",
 ]
 RUNS_PER_CONFIG = 1
-ALL_IMPLS = [DenyListPlugin, DenyListPluginRustRs, DenyListPluginRust]
+ALL_IMPLS: List[Type[Plugin]] = [
+    DenyListPlugin,
+    DenyListPluginRustRs,
+    DenyListPluginRust,
+]
 
 
 @runtime_checkable
@@ -64,7 +68,7 @@ def load_config(config_path: str) -> Dict[str, Any]:
 
 def create_plugin_instances(
     config: Dict[str, Any], plugin_type: Type[Plugin]
-) -> List[tuple[str, PromptPreFetchPlugin]]:
+) -> List[tuple[str, Plugin]]:
     """Create plugin instances for each deny word list."""
     plugins = []
 
@@ -84,7 +88,7 @@ def create_plugin_instances(
 
 
 async def benchmark_plugin(
-    plugins: List[tuple[str, PromptPreFetchPlugin]],
+    plugins: List[tuple[str, Plugin]],
     sample_texts: List[Dict[str, Any]],
     config: Dict[str, Any],
     warmup_runs: int = WARMUP_RUNS,
@@ -96,7 +100,7 @@ async def benchmark_plugin(
     gctx = GlobalContext(request_id="deny-benchmark")
     ctx = PluginContext(global_context=gctx)
 
-    results = {
+    results: Dict[str, Any] = {
         "total_combinations": len(plugins) * len(sample_texts),
         "warmup_runs": warmup_runs,
         "benchmark_runs": benchmark_runs,
@@ -124,7 +128,7 @@ async def benchmark_plugin(
 
             # Warmup
             for _ in range(warmup_runs):
-                await plugin.prompt_pre_fetch(payload, ctx)
+                await plugin.prompt_pre_fetch(payload, ctx)  # type: ignore[attr-defined]
 
             # Benchmark
             timings_us = []
@@ -132,7 +136,7 @@ async def benchmark_plugin(
 
             for i in range(benchmark_runs):
                 start = time.perf_counter()
-                result = await plugin.prompt_pre_fetch(payload, ctx)
+                result = await plugin.prompt_pre_fetch(payload, ctx)  # type: ignore[attr-defined]
                 elapsed = time.perf_counter() - start
                 timings_us.append(elapsed * 1_000_000)
 
@@ -148,7 +152,7 @@ async def benchmark_plugin(
             min_time = min(timings_us)
             total_time_combination = sum(timings_us)
 
-            combination_result = {
+            combination_result: Dict[str, Any] = {
                 "plugin_name": plugin_name,
                 "sample_name": sample["name"],
                 "sample_text_length": len(sample["text"]),
@@ -302,7 +306,7 @@ async def test_benchmark_comparison():
                 f"\n--- Run {run_num}/{RUNS_PER_CONFIG} for {word_count} words config ---"
             )
 
-            run_results = {"run": run_num}
+            run_results: Dict[str, Any] = {"run": run_num}
 
             # Benchmark all implementations
             for impl in ALL_IMPLS:
@@ -319,6 +323,7 @@ async def test_benchmark_comparison():
             config_run_results.append(run_results)
 
         # Store results for this config
+        all_config_results: List[Dict[str, Any]] = []
         all_config_results.append(
             {
                 "config_path": config_path,
@@ -334,9 +339,9 @@ async def test_benchmark_comparison():
     print("=" * 80)
 
     for config_result in all_config_results:
-        word_count = config_result["word_count"]
-        config = config_result["config"]
-        runs = config_result["runs"]
+        word_count: int = config_result["word_count"]
+        config: Dict[str, Any] = config_result["config"]
+        runs: List[Dict[str, Any]] = config_result["runs"]
 
         print(f"\n{'=' * 80}")
         print(f"Configuration: {word_count} words")
@@ -351,14 +356,20 @@ async def test_benchmark_comparison():
             print("-" * 80)
 
         # Aggregate results across all runs for all implementations
-        all_impl_medians = {impl.__name__: [] for impl in ALL_IMPLS}
-        all_impl_p99s = {impl.__name__: [] for impl in ALL_IMPLS}
-        all_impl_totals = {impl.__name__: [] for impl in ALL_IMPLS}
+        all_impl_medians: Dict[str, List[float]] = {
+            impl.__name__: [] for impl in ALL_IMPLS
+        }
+        all_impl_p99s: Dict[str, List[float]] = {
+            impl.__name__: [] for impl in ALL_IMPLS
+        }
+        all_impl_totals: Dict[str, List[float]] = {
+            impl.__name__: [] for impl in ALL_IMPLS
+        }
 
         for run_data in runs:
             for impl in ALL_IMPLS:
                 impl_name = impl.__name__
-                impl_results = run_data[impl_name]
+                impl_results: Dict[str, Any] = run_data[impl_name]
 
                 medians = [
                     c["timings"]["median_us"] for c in impl_results["combinations"]

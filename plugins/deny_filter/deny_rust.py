@@ -8,6 +8,8 @@ Simple example plugin for searching and replacing text.
 """
 
 # First-Party
+from typing import Any
+
 from mcpgateway.plugins.framework import (
     PluginConfig,
     PluginContext,
@@ -36,16 +38,16 @@ class DenyListPluginRust(DenyListPlugin):
         """
         super().__init__(config)
         self._dconfig = DenyListConfig.model_validate(self._config.config)
-        self._deny_list = DenyListRs(self._dconfig.words)
+        self._deny_list: Any = DenyListRs(self._dconfig.words)
 
     async def prompt_pre_fetch(
-            self, payload: PromptPrehookPayload, _context: PluginContext
+            self, payload: PromptPrehookPayload, context: PluginContext
     ) -> PromptPrehookResult:
         """The plugin hook run before a prompt is retrieved and rendered.
 
         Args:
             payload: The prompt payload to be analyzed.
-            _context: contextual information about the hook call.
+            context: contextual information about the hook call.
 
         Returns:
             The result of the plugin's analysis, including whether the prompt can proceed.

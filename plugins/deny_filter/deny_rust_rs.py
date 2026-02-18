@@ -9,6 +9,7 @@ This module loads configurations for plugins.
 """
 
 # Third-Party
+from typing import Any
 
 # First-Party
 from deny_filter import DenyListRs
@@ -38,7 +39,7 @@ class DenyListPluginRustRs(DenyListPlugin):
         """
         super().__init__(config)
         self._dconfig = DenyListConfig.model_validate(self._config.config)
-        self._deny_list = DenyListRs(self._dconfig.words)
+        self._deny_list: Any = DenyListRs(self._dconfig.words)
 
     async def prompt_pre_fetch(
         self, payload: PromptPrehookPayload, context: PluginContext
