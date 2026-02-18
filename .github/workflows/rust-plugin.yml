@@ -72,7 +72,7 @@ jobs:
         uses: taiki-e/install-action@cargo-llvm-cov
       - name: Generate Coverage Summary
         run: |
-          cargo llvm-cov --summary-only --no-clean --ignore-filename-regex "src/bin/.*" > /tmp/cov-summary.txt
+          cargo llvm-cov --summary-only --no-clean --ignore-filename-regex "stub_gen" > /tmp/cov-summary.txt
           echo "### Code Coverage Summary" >> $GITHUB_STEP_SUMMARY
           echo '```text' >> $GITHUB_STEP_SUMMARY
           cat /tmp/cov-summary.txt >> $GITHUB_STEP_SUMMARY
