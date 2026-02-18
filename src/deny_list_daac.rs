@@ -15,7 +15,7 @@ pub struct DenyListDaac {
 }
 
 impl Matcher for DenyListDaac {
-    /// implements match with aho-corasic
+    /// implements match with daachorse
     fn is_match(&self, s: &str) -> bool {
         // Convert input to lowercase for case-insensitive matching
         self.daac.find_iter(&s.to_lowercase()).next().is_some()
