@@ -1,8 +1,8 @@
 use crate::build_error::build_error;
 use crate::matcher::Matcher;
+use daachorse::MatchKind;
 use daachorse::charwise::CharwiseDoubleArrayAhoCorasick as Daac;
 use daachorse::charwise::CharwiseDoubleArrayAhoCorasickBuilder as DaacBuilder;
-use daachorse::MatchKind;
 use pyo3::prelude::*;
 use pyo3::pyclass;
 use pyo3::types::PyDict;
