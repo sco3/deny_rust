@@ -1,8 +1,9 @@
+use deny_filter::pymodule::stub_info;
 use pyo3_stub_gen::Result;
 use std::path::{Path, PathBuf};
 
 fn main() -> Result<()> {
-    let stub = deny_filter::stub_info()?;
+    let stub = stub_info()?;
     //println!("{stub:?}");
 
     if let Some(module_name) = stub.modules.keys().next() {

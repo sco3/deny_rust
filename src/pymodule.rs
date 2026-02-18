@@ -1,5 +1,6 @@
 pub use crate::deny_list::DenyList;
 pub use crate::deny_list_rs::DenyListRs;
+use pyo3_stub_gen::define_stub_info_gatherer;
 
 use pyo3::prelude::*;
 
@@ -12,3 +13,5 @@ pub fn deny_filter(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<DenyListRs>()?;
     Ok(())
 }
+
+define_stub_info_gatherer!(stub_info);
