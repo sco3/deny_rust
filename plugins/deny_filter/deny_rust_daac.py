@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Location: ./plugins/deny_filter/deny.py
+"""Location: ./plugins/deny_filter/deny_rust_daac.py
 Copyright 2025
 SPDX-License-Identifier: Apache-2.0
 Authors: Fred Araujo, Dmitry Zakharov
