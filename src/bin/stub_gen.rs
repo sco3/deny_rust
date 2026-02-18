@@ -1,6 +1,5 @@
 use pyo3_stub_gen::Result;
-use std::env;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 fn main() -> Result<()> {
     let stub = deny_filter::stub_info()?;
@@ -11,7 +10,17 @@ fn main() -> Result<()> {
         if !target.exists() {
             std::fs::create_dir_all(target).expect("failed to create dir");
         }
-        env::set_current_dir(target).expect("failed to change dir");
+
+        stub.generate()?;
+
+        // Move generated .pyi file to module_name/module_name.pyi
+        let src = PathBuf::from(format!("{module_name}.pyi"));
+        let dst = target.join(format!("{module_name}.pyi"));
+        if src.exists() {
+            std::fs::rename(&src, &dst).expect("failed to move .pyi file");
+        }
+    } else {
+        stub.generate()?;
     }
 
     Ok(())
