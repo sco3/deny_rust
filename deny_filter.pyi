@@ -5,6 +5,7 @@ import builtins
 import typing
 __all__ = [
     "DenyList",
+    "DenyListDaac",
     "DenyListRs",
 ]
 
@@ -15,6 +16,22 @@ class DenyList:
         constructor
         # Errors
         * aho-corasic errors (too long patterns)
+        """
+    def is_match(self, s: builtins.str) -> builtins.bool: ...
+    def scan_str(self, txt: builtins.str) -> builtins.bool: ...
+    def scan(self, args: dict) -> builtins.bool: ...
+    def scan_any(self, value: typing.Any) -> builtins.bool:
+        r"""
+        scans dict,str,list
+        """
+
+@typing.final
+class DenyListDaac:
+    def __new__(cls, words: typing.Sequence[builtins.str]) -> DenyListDaac:
+        r"""
+        constructor
+        # Errors
+        * daachorse errors (e.g. too long patterns)
         """
     def is_match(self, s: builtins.str) -> builtins.bool: ...
     def scan_str(self, txt: builtins.str) -> builtins.bool: ...

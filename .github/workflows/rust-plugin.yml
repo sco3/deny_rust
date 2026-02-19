@@ -27,7 +27,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.14'
+          python-version: '3.13'
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
@@ -72,7 +72,7 @@ jobs:
         uses: taiki-e/install-action@cargo-llvm-cov
       - name: Generate Coverage Summary
         run: |
-          cargo llvm-cov --summary-only --no-clean --ignore-filename-regex "bin/.*" > /tmp/cov-summary.txt
+          cargo llvm-cov --summary-only --no-clean --ignore-filename-regex "src/bin/.*" > /tmp/cov-summary.txt
           echo "### Code Coverage Summary" >> $GITHUB_STEP_SUMMARY
           echo '```text' >> $GITHUB_STEP_SUMMARY
           cat /tmp/cov-summary.txt >> $GITHUB_STEP_SUMMARY
@@ -92,7 +92,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.14'
+          python-version: '3.13'
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
@@ -106,7 +106,7 @@ jobs:
       - name: Run pytest
         run: |
           set -o pipefail
-          uv run pytest -v -s | grep -E "CPU:|\|" | tee -a $GITHUB_STEP_SUMMARY
+          uv run pytest -v -s >> $GITHUB_STEP_SUMMARY
 
       - name: Ruff check
         run: uv run ruff check

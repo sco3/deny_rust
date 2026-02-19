@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import List, Dict, Any, Type, Protocol, runtime_checkable
 
 import pytest
-from mcpgateway.plugins.framework import PluginConfig, Plugin, PluginContext
+from mcpgateway.plugins.framework import PluginConfig, PluginContext
 from mcpgateway.plugins.framework.hooks.prompts import (
     PromptHookType,
     PromptPrehookPayload,
@@ -23,12 +23,24 @@ from mcpgateway.services.logging_service import LoggingService
 from plugins.deny_filter.deny import DenyListPlugin
 from plugins.deny_filter.deny_rust import DenyListPluginRust
 from plugins.deny_filter.deny_rust_rs import DenyListPluginRustRs
+from plugins.deny_filter.deny_rust_daac import DenyListPluginRustDaac
 
-# Initialize logging service first
-loggingSvc = LoggingService()
-loggingSvc.get_logger("plugins.deny_filter.deny").setLevel(logging.ERROR)
-loggingSvc.get_logger("plugins.deny_filter.deny_rust").setLevel(logging.ERROR)
-loggingSvc.get_logger("plugins.deny_filter.deny_rust_rs").setLevel(logging.ERROR)
+
+@runtime_checkable
+class PromptPreFetchPlugin(Protocol):
+    """Protocol for plugins that implement prompt_pre_fetch hook."""
+
+    def __init__(
+        self,
+        config: PluginConfig,
+    ) -> None: ...
+
+    async def prompt_pre_fetch(
+        self, payload: PromptPrehookPayload, context: PluginContext
+    ) -> PromptPrehookResult:
+        """The plugin hook run before a prompt is retrieved and rendered."""
+        ...
+
 
 WARMUP_RUNS = 3000
 BENCHMARK_RUNS = 10000
@@ -36,24 +48,22 @@ CONFIG_FILES = [
     "data/deny_check_config_10.json",
     "data/deny_check_config_100.json",
     "data/deny_check_config_200.json",
+    "data/deny_check_config_1000.json",
 ]
 RUNS_PER_CONFIG = 1
-ALL_IMPLS: List[Type[Plugin]] = [
+ALL_IMPLS: List[Type[PromptPreFetchPlugin]] = [
     DenyListPlugin,
-    DenyListPluginRustRs,
     DenyListPluginRust,
+    DenyListPluginRustRs,
+    DenyListPluginRustDaac,
 ]
 
-
-@runtime_checkable
-class PromptPreFetchPlugin(Protocol):
-    """Protocol for plugins that implement prompt_pre_fetch hook."""
-
-    async def prompt_pre_fetch(
-        self, payload: PromptPrehookPayload, context: PluginContext
-    ) -> PromptPrehookResult:
-        """The plugin hook run before a prompt is retrieved and rendered."""
-        ...
+# Initialize logging service first
+loggingSvc = LoggingService()
+loggingSvc.get_logger("plugins.deny_filter.deny").setLevel(logging.ERROR)
+loggingSvc.get_logger("plugins.deny_filter.deny_rust").setLevel(logging.ERROR)
+loggingSvc.get_logger("plugins.deny_filter.deny_rust_rs").setLevel(logging.ERROR)
+loggingSvc.get_logger("plugins.deny_filter.deny_rust_daac").setLevel(logging.ERROR)
 
 
 def load_config(config_path: str) -> Dict[str, Any]:
@@ -67,10 +77,10 @@ def load_config(config_path: str) -> Dict[str, Any]:
 
 
 def create_plugin_instances(
-    config: Dict[str, Any], plugin_type: Type[Plugin]
-) -> List[tuple[str, Plugin]]:
+    config: Dict[str, Any], plugin_type: Type[PromptPreFetchPlugin]
+) -> List[tuple[str, PromptPreFetchPlugin]]:
     """Create plugin instances for each deny word list."""
-    plugins = []
+    plugins: List[tuple[str, PromptPreFetchPlugin]] = []
 
     for deny_list in config["deny_word_lists"]:
         plugin_config = PluginConfig(
@@ -88,7 +98,7 @@ def create_plugin_instances(
 
 
 async def benchmark_plugin(
-    plugins: List[tuple[str, Plugin]],
+    plugins: List[tuple[str, PromptPreFetchPlugin]],
     sample_texts: List[Dict[str, Any]],
     config: Dict[str, Any],
     warmup_runs: int = WARMUP_RUNS,
@@ -128,7 +138,7 @@ async def benchmark_plugin(
 
             # Warmup
             for _ in range(warmup_runs):
-                await plugin.prompt_pre_fetch(payload, ctx)  # type: ignore[attr-defined]
+                await plugin.prompt_pre_fetch(payload, ctx)
 
             # Benchmark
             timings_us = []
@@ -136,7 +146,7 @@ async def benchmark_plugin(
 
             for i in range(benchmark_runs):
                 start = time.perf_counter()
-                result = await plugin.prompt_pre_fetch(payload, ctx)  # type: ignore[attr-defined]
+                result = await plugin.prompt_pre_fetch(payload, ctx)
                 elapsed = time.perf_counter() - start
                 timings_us.append(elapsed * 1_000_000)
 
@@ -192,7 +202,7 @@ def get_cpu_info() -> str:
 
 def print_markdown_table(
     all_config_results: List[Dict[str, Any]],
-    impls: List[Type[Plugin]],
+    impls: List[Type[PromptPreFetchPlugin]],
 ):
     """Print results in Markdown table format similar to README.
 

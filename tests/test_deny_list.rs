@@ -4,7 +4,8 @@ use deny_filter::deny_list::DenyList;
 use deny_filter::deny_list_rs::DenyListRs;
 
 use deny_filter::build_error::build_error;
-use deny_filter::pymodule::deny_filter as dr;
+use deny_filter::deny_list_daac::DenyListDaac;
+use deny_filter::pymodule::deny_filter as deny_filter_mod;
 use pyo3::PyResult;
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList};
@@ -63,14 +64,16 @@ fn test_deny_lists() -> PyResult<()> {
         .map(std::string::ToString::to_string)
         .collect();
     let deny_list = DenyList::new(words.clone())?;
-    let deny_list_rs = DenyListRs::new(words)?;
+    let deny_list_rs = DenyListRs::new(words.clone())?;
+    let deny_list_daac = DenyListDaac::new(words)?;
 
     Python::initialize();
     Python::attach(|py| {
         common_test_logic(&deny_list, py);
         common_test_logic(&deny_list_rs, py);
+        common_test_logic(&deny_list_daac, py);
         let module = PyModule::new(py, "modules").unwrap();
-        dr(&module).unwrap();
+        deny_filter_mod(&module).unwrap();
     });
 
     let dummy_error = "mock error";
