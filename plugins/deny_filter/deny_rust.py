@@ -12,6 +12,7 @@ from typing import Any
 
 from deny_filter import DenyList
 from mcpgateway.plugins.framework import (
+    Plugin,
     PluginConfig,
     PluginContext,
     PromptPrehookPayload,
@@ -19,7 +20,7 @@ from mcpgateway.plugins.framework import (
 )
 from mcpgateway.services.logging_service import LoggingService
 
-from plugins.deny_filter.deny import DenyListConfig, DenyListPlugin
+from plugins.deny_filter.deny import DenyListConfig
 from plugins.deny_filter.deny_violation import deny_violation
 
 # Initialize logging service first
@@ -27,7 +28,7 @@ logging_service = LoggingService()
 logger = logging_service.get_logger(__name__)
 
 
-class DenyListPluginRust(DenyListPlugin):
+class DenyListPluginRust(Plugin):
     """Example deny list plugin."""
 
     def __init__(self, config: PluginConfig):
@@ -37,8 +38,8 @@ class DenyListPluginRust(DenyListPlugin):
             config: Plugin configuration.
         """
         super().__init__(config)
-        self._dconfig = DenyListConfig.model_validate(self._config.config)
-        self._deny_list: Any = DenyList(self._dconfig.words)
+        dconfig = DenyListConfig.model_validate(self._config.config)
+        self._deny_list: Any = DenyList(dconfig.words)
 
     async def prompt_pre_fetch(
         self, payload: PromptPrehookPayload, _context: PluginContext

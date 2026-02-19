@@ -13,6 +13,7 @@ import ahocorasick  # pyahocorasick package
 
 # First-Party
 from mcpgateway.plugins.framework import (
+    Plugin,
     PluginConfig,
     PluginContext,
     PromptPrehookPayload,
@@ -20,7 +21,7 @@ from mcpgateway.plugins.framework import (
 )
 from mcpgateway.services.logging_service import LoggingService
 
-from plugins.deny_filter.deny import DenyListPlugin
+from plugins.deny_filter.deny import DenyListConfig
 from plugins.deny_filter.deny_violation import deny_violation
 
 # Initialize logging service first
@@ -29,7 +30,7 @@ logger = logging_service.get_logger(__name__)
 
 
 
-class DenyListAcPlugin(DenyListPlugin):
+class DenyListAcPlugin(Plugin):
     """Aho-Corasick based deny list plugin."""
 
     def __init__(self, config: PluginConfig):
@@ -39,7 +40,8 @@ class DenyListAcPlugin(DenyListPlugin):
             config: Plugin configuration.
         """
         super().__init__(config)
-        self._automaton = self._build_automaton(self._dconfig.words)
+        dconfig = DenyListConfig.model_validate(self._config.config)
+        self._automaton = self._build_automaton(dconfig.words)
 
     def _build_automaton(self, words: list[str]) -> ahocorasick.Automaton | None:
         """Build the Aho-Corasick automaton for efficient pattern matching.
