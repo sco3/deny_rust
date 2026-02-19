@@ -4,7 +4,10 @@ version = "1.0.0-BETA-2"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = ["mcp-contextforge-gateway>=0.9.0"]
+dependencies = [
+    "mcp-contextforge-gateway>=0.9.0",
+    "pyahocorasick>=2.3.0",
+]
 
 
 [build-system]
@@ -20,7 +23,8 @@ module-name = "deny_filter"
 pythonpath = ["."]
 
 [tool.pyrefly]
-search-path = ["."]
+search-path = [".", "stubs"]
+site-package-path = [".venv/lib/python3.13/site-packages"]
 
 [dependency-groups]
 dev = [
