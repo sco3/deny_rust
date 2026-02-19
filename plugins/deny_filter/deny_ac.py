@@ -13,7 +13,6 @@ import ahocorasick  # pyahocorasick package
 
 # First-Party
 from mcpgateway.plugins.framework import (
-    Plugin,
     PluginConfig,
     PluginContext,
     PromptPrehookPayload,
