@@ -23,7 +23,7 @@ from mcpgateway.services.logging_service import LoggingService
 from plugins.deny_filter.deny import DenyListPlugin
 from plugins.deny_filter.deny_rust import DenyListPluginRust
 from plugins.deny_filter.deny_rust_rs import DenyListPluginRustRs
-#from plugins.deny_filter.deny_rust_daac import DenyListPluginRustDaac
+from plugins.deny_filter.deny_rust_daac import DenyListPluginRustDaac
 
 
 @runtime_checkable
@@ -55,7 +55,7 @@ ALL_IMPLS: List[Type[PromptPreFetchPlugin]] = [
     DenyListPlugin,
     DenyListPluginRust,
     DenyListPluginRustRs,
-#    DenyListPluginRustDaac,
+    DenyListPluginRustDaac,
 ]
 
 # Initialize logging service first

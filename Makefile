@@ -42,7 +42,7 @@ build b: clean-cache
 # help: build-release br	- Run cargo build --release
 build-release br: clean-cache
 	@echo "Running build release..."
-	@cargo run --bin stub_gen --release 
+	@cargo run --bin stub_gen --release
 	@uv run maturin build --release
 
 # =============================================================================
