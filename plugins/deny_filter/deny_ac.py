@@ -20,7 +20,7 @@ from mcpgateway.plugins.framework import (
 )
 from mcpgateway.services.logging_service import LoggingService
 
-from plugins.deny_filter.deny import DenyListConfig, DenyListPlugin
+from plugins.deny_filter.deny import DenyListPlugin
 from plugins.deny_filter.deny_violation import deny_violation
 
 # Initialize logging service first
