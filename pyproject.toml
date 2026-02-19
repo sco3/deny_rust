@@ -15,8 +15,6 @@ build-backend = "maturin"
 # This tells maturin which features to use when uv builds it
 features = ["pyo3/extension-module"]
 module-name = "deny_filter"
-include = ["stub/*.pyi", "stub/py.typed"]
-extra-files = ["stub/deny_filter.pyi", "stub/py.typed"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
