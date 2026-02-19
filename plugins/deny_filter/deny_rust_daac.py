@@ -34,4 +34,4 @@ class DenyListPluginRustDaac(DenyListPluginRust):
         """
         super().__init__(config)
         self._dconfig = DenyListConfig.model_validate(self._config.config)
-        self._deny_list: Any = DenyListDaac(self._dconfig.words)
+        self._deny_list: DenyListDaac = DenyListDaac(self._dconfig.words)
