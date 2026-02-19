@@ -89,7 +89,8 @@ class DenyListAcPlugin(DenyListPlugin):
         """
         if payload.args:
             for key in payload.args:
-                if self._contains_deny_word(payload.args[key]):
+                value = payload.args[key]
+                if isinstance(value, str) and self._contains_deny_word(value):
                     logger.warning("Deny word detected in prompt argument '%s'", key)
                     return deny_violation(payload)
         return PromptPrehookResult(modified_payload=payload)
