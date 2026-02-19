@@ -21,7 +21,7 @@ from mcpgateway.plugins.framework import (
 )
 from mcpgateway.services.logging_service import LoggingService
 
-from plugins.deny_filter.deny import DenyListConfig
+from plugins.deny_filter.deny import DenyListConfig, DenyListPlugin
 from plugins.deny_filter.deny_violation import deny_violation
 
 # Initialize logging service first
@@ -30,7 +30,7 @@ logger = logging_service.get_logger(__name__)
 
 
 
-class DenyListAcPlugin(Plugin):
+class DenyListAcPlugin(DenyListPlugin):
     """Aho-Corasick based deny list plugin."""
 
     def __init__(self, config: PluginConfig):

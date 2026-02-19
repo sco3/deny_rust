@@ -36,7 +36,7 @@ class PromptPreFetchPlugin(Protocol):
     ) -> None: ...
 
     async def prompt_pre_fetch(
-        self, payload: PromptPrehookPayload, context: PluginContext
+        self, payload: PromptPrehookPayload, _context: PluginContext
     ) -> PromptPrehookResult:
         """The plugin hook run before a prompt is retrieved and rendered."""
         ...
