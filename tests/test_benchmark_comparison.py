@@ -20,6 +20,7 @@ from mcpgateway.plugins.framework.hooks.prompts import (
 from mcpgateway.plugins.framework.models import GlobalContext
 from mcpgateway.services.logging_service import LoggingService
 
+from plugins.deny_filter.deny import DenyListPlugim
 from plugins.deny_filter.deny_rust import DenyListPluginRust
 from plugins.deny_filter.deny_rust_rs import DenyListPluginRustRs
 from plugins.deny_filter.deny_rust_daac import DenyListPluginRustDaac
@@ -47,10 +48,11 @@ CONFIG_FILES = [
     "data/deny_check_config_10.json",
     "data/deny_check_config_100.json",
     "data/deny_check_config_200.json",
-    "data/mixed_case_1000.json",
+    "data/deny_check_config_1000.json",
 ]
 RUNS_PER_CONFIG = 1
 ALL_IMPLS: List[Type[PromptPreFetchPlugin]] = [
+    DenyListPlugin,
     DenyListPluginRust,
     DenyListPluginRustRs,
     DenyListPluginRustDaac,
