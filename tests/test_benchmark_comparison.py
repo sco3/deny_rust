@@ -32,12 +32,27 @@ class PromptPreFetchPlugin(Protocol):
     def __init__(
         self,
         config: PluginConfig,
-    ) -> None: ...
+    ) -> None: """
+        Initialize the plugin instance using the provided PluginConfig.
+        
+        Parameters:
+            config (PluginConfig): Plugin configuration object containing identity, hook choices, priority, and implementation-specific settings.
+        """
+        ...
 
     async def prompt_pre_fetch(
         self, payload: PromptPrehookPayload, context: PluginContext
     ) -> PromptPrehookResult:
-        """The plugin hook run before a prompt is retrieved and rendered."""
+        """
+        Run the deny-list check before a prompt is retrieved and rendered.
+        
+        Parameters:
+            payload (PromptPrehookPayload): Payload containing the prompt identifier and call arguments (including the text to check, system prompt, and other contextual fields).
+            context (PluginContext): Plugin execution context for this invocation.
+        
+        Returns:
+            PromptPrehookResult: Result indicating whether the prompt is blocked and any associated violation details or metadata.
+        """
         ...
 
 
@@ -65,7 +80,17 @@ loggingSvc.get_logger("plugins.deny_filter.deny_rust_daac").setLevel(logging.ERR
 
 
 def load_config(config_path: str) -> Dict[str, Any]:
-    """Load the deny check configuration from JSON file."""
+    """
+    Load a deny-list configuration from a JSON file.
+    
+    Attempts to open config_path; if that path does not exist, a path relative to this module's directory is tried.
+    
+    Parameters:
+        config_path (str): Path to the JSON configuration file (absolute or relative).
+    
+    Returns:
+        Dict[str, Any]: Parsed JSON content as a dictionary.
+    """
     config_file = Path(config_path)
     if not config_file.exists():
         config_file = Path(__file__).parent / config_path
@@ -77,7 +102,18 @@ def load_config(config_path: str) -> Dict[str, Any]:
 def create_plugin_instances(
     config: Dict[str, Any], plugin_type: Type[PromptPreFetchPlugin]
 ) -> List[tuple[str, PromptPreFetchPlugin]]:
-    """Create plugin instances for each deny word list."""
+    """
+    Create plugin instances from a configuration's deny word lists.
+    
+    Parameters:
+        config (Dict[str, Any]): Configuration containing a "deny_word_lists" key whose value is an iterable of mappings with at least:
+            - "name" (str): identifier used as the returned deny list name.
+            - "words" (Iterable[str]): words to place into the plugin's config.
+        plugin_type (Type[PromptPreFetchPlugin]): Plugin class to instantiate; must accept a PluginConfig via its constructor.
+    
+    Returns:
+        List[tuple[str, PromptPreFetchPlugin]]: A list of (deny_list_name, plugin_instance) pairs for each entry in config["deny_word_lists"].
+    """
     plugins: List[tuple[str, PromptPreFetchPlugin]] = []
 
     for deny_list in config["deny_word_lists"]:
@@ -102,7 +138,31 @@ async def benchmark_plugin(
     warmup_runs: int = WARMUP_RUNS,
     benchmark_runs: int = BENCHMARK_RUNS,
 ) -> Dict[str, Any]:
-    """Benchmark prompt_pre_fetch execution for all combinations."""
+    """
+    Run warmup and timed benchmarks of each plugin against each sample text and collect timing and blocking results.
+    
+    Parameters:
+        plugins (List[tuple[str, PromptPreFetchPlugin]]): List of (deny_list_name, plugin_instance) pairs to benchmark.
+        sample_texts (List[Dict[str, Any]]): List of sample records; each should include at least 'name' and 'text', and may include 'should_block' indicating the expected block outcome.
+        config (Dict[str, Any]): Configuration containing 'deny_word_lists'; each entry must have a 'name' that matches plugin names.
+        warmup_runs (int): Number of warmup iterations to execute per combination before timing.
+        benchmark_runs (int): Number of timed iterations to execute per combination.
+    
+    Returns:
+        Dict[str, Any]: Summary dictionary with keys:
+            - total_combinations (int): Total number of plugin/sample combinations benchmarked.
+            - warmup_runs (int): Warmup iteration count used.
+            - benchmark_runs (int): Timed iteration count used.
+            - total_time_us (float): Sum of all measured times in microseconds across combinations.
+            - combinations (List[Dict[str, Any]]): Per-combination results containing:
+                - plugin_name (str)
+                - sample_name (str)
+                - sample_text_length (int)
+                - expected_block (bool)
+                - actual_blocked (bool)
+                - matches_expected (bool)
+                - timings (Dict[str, float]): timing metrics in microseconds with keys 'median_us', 'p99_us', 'mean_us', 'min_us', 'total_us'
+    """
     import time
 
     gctx = GlobalContext(request_id="deny-benchmark")
@@ -202,11 +262,16 @@ def print_markdown_table(
     all_config_results: List[Dict[str, Any]],
     impls: List[Type[PromptPreFetchPlugin]],
 ):
-    """Print results in Markdown table format similar to README.
-
-    Args:
-        all_config_results: Aggregated benchmark results per config.
-        impls: List of implementation classes (e.g., ALL_IMPLS). First impl is used as baseline for speedup calculations.
+    """
+    Emit a Markdown-formatted performance comparison table (suitable for README) that summarizes median timings and speedups across implementations.
+    
+    This prints a header with CPU information, then for each configuration aggregates per-run medians for each implementation, computes average medians, and displays a table row containing the configuration size, each implementation's average median (microseconds), and speedup relative to the first implementation (used as the baseline).
+    
+    Parameters:
+        all_config_results (List[Dict[str, Any]]): Aggregated benchmark results per configuration. Each dict is expected to include:
+            - "word_count": int, the configuration size shown in the table.
+            - "runs": List of run dictionaries; each run dictionary must contain per-implementation entries keyed by implementation class name, where each implementation entry includes a "combinations" list of combination result dicts. Each combination result must include a "timings" dict with "median_us" numeric values.
+        impls (List[Type[PromptPreFetchPlugin]]): Implementation classes in the same order used for benchmarking. The first implementation in this list is treated as the baseline for speedup calculations.
     """
     print("\n" + "=" * 80)
     print("MARKDOWN TABLE OUTPUT (for README)")

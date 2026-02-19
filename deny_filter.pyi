@@ -12,45 +12,163 @@ __all__ = [
 @typing.final
 class DenyList:
     def __new__(cls, words: typing.Sequence[builtins.str]) -> DenyList:
-        r"""
-        constructor
-        # Errors
-        * aho-corasic errors (too long patterns)
         """
-    def is_match(self, s: builtins.str) -> builtins.bool: ...
-    def scan_str(self, txt: builtins.str) -> builtins.bool: ...
-    def scan(self, args: dict) -> builtins.bool: ...
+        Create a DenyList from a sequence of pattern strings.
+        
+        Parameters:
+            words (Sequence[str]): Sequence of patterns used to initialize the deny list.
+        
+        Raises:
+            RuntimeError: If the underlying pattern-builder fails (for example, due to patterns exceeding allowed length).
+        """
+    def is_match(self, s: builtins.str) -> builtins.bool: """
+Determine whether the given string matches the deny-list patterns.
+
+Returns:
+    `true` if the string matches one of the deny-list patterns, `false` otherwise.
+"""
+...
+    def scan_str(self, txt: builtins.str) -> builtins.bool: """
+Check whether the given text contains any deny-list pattern.
+
+Parameters:
+    txt (str): Text to scan for deny-list patterns.
+
+Returns:
+    bool: `True` if any pattern from the deny list is found in `txt`, `False` otherwise.
+"""
+...
+    def scan(self, args: dict) -> builtins.bool: """
+Scan a dictionary's values for any deny-list matches.
+
+Parameters:
+    args (dict): Mapping of keys to values to scan. String values and iterable/list values will be inspected for patterns.
+
+Returns:
+    True if any value in the dictionary matches the deny-list, False otherwise.
+"""
+...
     def scan_any(self, value: typing.Any) -> builtins.bool:
-        r"""
-        scans dict,str,list
+        """
+        Scan a value for any deny-list pattern matches.
+        
+        Accepts a string, a mapping (e.g., dict), or an iterable of strings and checks each relevant text item for a match.
+        
+        Parameters:
+            value (Any): The value to scan; may be a `str`, a `dict` whose values will be scanned, or an iterable of strings.
+        
+        Returns:
+            `true` if any scanned text matches the deny list, `false` otherwise.
         """
 
 @typing.final
 class DenyListDaac:
     def __new__(cls, words: typing.Sequence[builtins.str]) -> DenyListDaac:
         r"""
-        constructor
-        # Errors
-        * daachorse errors (e.g. too long patterns)
+        Create a DenyListDaac configured with the given sequence of pattern strings.
+        
+        Parameters:
+            words: A sequence of pattern strings to initialize the deny-list.
+        
+        Returns:
+            A new DenyListDaac instance configured with the provided patterns.
+        
+        Notes:
+            Initialization may raise daachorse-related errors for invalid or overly long patterns.
         """
-    def is_match(self, s: builtins.str) -> builtins.bool: ...
-    def scan_str(self, txt: builtins.str) -> builtins.bool: ...
-    def scan(self, args: dict) -> builtins.bool: ...
+    def is_match(self, s: builtins.str) -> builtins.bool: """
+Determine whether the given string matches the deny-list patterns.
+
+Returns:
+    `true` if the string matches one of the deny-list patterns, `false` otherwise.
+"""
+...
+    def scan_str(self, txt: builtins.str) -> builtins.bool: """
+Check whether the given text contains any deny-list pattern.
+
+Parameters:
+    txt (str): Text to scan for deny-list patterns.
+
+Returns:
+    bool: `True` if any pattern from the deny list is found in `txt`, `False` otherwise.
+"""
+...
+    def scan(self, args: dict) -> builtins.bool: """
+Scan a dictionary's values for any deny-list matches.
+
+Parameters:
+    args (dict): Mapping of keys to values to scan. String values and iterable/list values will be inspected for patterns.
+
+Returns:
+    True if any value in the dictionary matches the deny-list, False otherwise.
+"""
+...
     def scan_any(self, value: typing.Any) -> builtins.bool:
-        r"""
-        scans dict,str,list
+        """
+        Scan a value for any deny-list pattern matches.
+        
+        Accepts a string, a mapping (e.g., dict), or an iterable of strings and checks each relevant text item for a match.
+        
+        Parameters:
+            value (Any): The value to scan; may be a `str`, a `dict` whose values will be scanned, or an iterable of strings.
+        
+        Returns:
+            `true` if any scanned text matches the deny list, `false` otherwise.
         """
 
 @typing.final
 class DenyListRs:
     def __new__(cls, words: typing.Sequence[builtins.str]) -> DenyListRs:
-        r"""
-        constructor
-        # Errors
-        * regex problems (should not happen with simple match)
         """
-    def is_match(self, s: builtins.str) -> builtins.bool: ...
-    def scan_str(self, txt: builtins.str) -> builtins.bool: ...
-    def scan(self, args: dict) -> builtins.bool: ...
-    def scan_any(self, value: typing.Any) -> builtins.bool: ...
+        Create a DenyListRs instance from a sequence of string patterns compiled as regular expressions.
+        
+        Parameters:
+            words (Sequence[str]): Sequence of pattern strings used to build the regex-based deny list.
+        
+        Returns:
+            DenyListRs: A new deny-list instance that matches input text against the provided patterns.
+        
+        Raises:
+            re.error: If any pattern is an invalid regular expression.
+        """
+    def is_match(self, s: builtins.str) -> builtins.bool: """
+Determine whether the given string matches the deny-list patterns.
 
+Returns:
+    `true` if the string matches one of the deny-list patterns, `false` otherwise.
+"""
+...
+    def scan_str(self, txt: builtins.str) -> builtins.bool: """
+Check whether the given text contains any deny-list pattern.
+
+Parameters:
+    txt (str): Text to scan for deny-list patterns.
+
+Returns:
+    bool: `True` if any pattern from the deny list is found in `txt`, `False` otherwise.
+"""
+...
+    def scan(self, args: dict) -> builtins.bool: """
+Scan a dictionary's values for any deny-list matches.
+
+Parameters:
+    args (dict): Mapping of keys to values to scan. String values and iterable/list values will be inspected for patterns.
+
+Returns:
+    True if any value in the dictionary matches the deny-list, False otherwise.
+"""
+...
+    def scan_any(self, value: typing.Any) -> builtins.bool: """
+Scan a value for any deny-list matches.
+
+Parameters:
+    value (typing.Any): The value to scan. Supported types:
+        - `str`: scanned as text;
+        - `dict`: scans the dictionary's string values;
+        - `list`/`tuple`: scans each element.
+        Other types are converted to string and scanned.
+
+Returns:
+    `true` if any deny-list pattern is found in the provided value, `false` otherwise.
+"""
+...

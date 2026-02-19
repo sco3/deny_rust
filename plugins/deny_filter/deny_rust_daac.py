@@ -27,10 +27,13 @@ class DenyListPluginRustDaac(DenyListPluginRust):
     """Example deny list plugin."""
 
     def __init__(self, config: PluginConfig):
-        """Initialize the deny list plugin.
-
-        Args:
-            config: Plugin configuration.
+        """
+        Create and configure the Rust/DAAC deny-list plugin.
+        
+        Validates the plugin configuration into a DenyListConfig and instantiates a DenyListDaac using the configured words.
+        
+        Parameters:
+            config (PluginConfig): Plugin configuration used to initialize and validate deny-list settings.
         """
         super().__init__(config)
         self._dconfig = DenyListConfig.model_validate(self._config.config)

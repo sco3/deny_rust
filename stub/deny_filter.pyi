@@ -21,36 +21,79 @@ class DenyList:
     def scan_str(self, txt: builtins.str) -> builtins.bool: ...
     def scan(self, args: dict) -> builtins.bool: ...
     def scan_any(self, value: typing.Any) -> builtins.bool:
-        r"""
-        scans dict,str,list
+        """
+        Scan a value (dict, string, or list) for any deny-list matches.
+        
+        Parameters:
+            value (Any): The value to scan; expected types are dict, str, or list (may contain nested values).
+        
+        Returns:
+            bool: `True` if a deny-list match is found, `False` otherwise.
         """
 
 @typing.final
 class DenyListDaac:
     def __new__(cls, words: typing.Sequence[builtins.str]) -> DenyListDaac:
-        r"""
-        constructor
-        # Errors
-        * aho-corasic errors (too long patterns)
         """
-    def is_match(self, s: builtins.str) -> builtins.bool: ...
-    def scan_str(self, txt: builtins.str) -> builtins.bool: ...
-    def scan(self, args: dict) -> builtins.bool: ...
+        Create a DenyListDaac instance initialized with the given sequence of patterns.
+        
+        Parameters:
+            words (Sequence[str]): Iterable of string patterns to include in the deny list.
+        
+        Returns:
+            DenyListDaac: A new deny-list instance containing the provided patterns.
+        
+        Note:
+            The underlying Aho–Corasick implementation may raise an error if any pattern is excessively long.
+        """
+    def is_match(self, s: builtins.str) -> builtins.bool: """
+Determine whether the given string matches any pattern in the deny-list.
+
+Returns:
+    True if the string matches the deny-list criteria, False otherwise.
+"""
+...
+    def scan_str(self, txt: builtins.str) -> builtins.bool: """
+Check whether the provided text contains any entry from the deny list.
+
+Parameters:
+    txt (str): Text to scan for deny-list matches.
+
+Returns:
+    bool: `true` if any deny-list entry is found in the text, `false` otherwise.
+"""
+...
+    def scan(self, args: dict) -> builtins.bool: """
+Scan a dictionary for deny-list matches.
+
+Parameters:
+    args (dict): Dictionary to scan for deny-list entries.
+
+Returns:
+    `true` if any deny-list entry is found in the provided dictionary, `false` otherwise.
+"""
+...
     def scan_any(self, value: typing.Any) -> builtins.bool:
-        r"""
-        scans dict,str,list
+        """
+        Scan a value (dict, string, or list) for any deny-list matches.
+        
+        Parameters:
+            value (Any): The value to scan; expected types are dict, str, or list (may contain nested values).
+        
+        Returns:
+            bool: `True` if a deny-list match is found, `False` otherwise.
         """
 
 @typing.final
 class DenyListRs:
     def __new__(cls, words: typing.Sequence[builtins.str]) -> DenyListRs:
-        r"""
-        constructor
-        # Errors
-        * regex problems (should not happen with simple match)
+        """
+        Create a DenyListRs instance initialized with the provided sequence of words.
+        
+        Parameters:
+            words (Sequence[str]): Sequence of string patterns used to build the deny list. Patterns are expected to be simple strings; regex compilation errors are possible but unexpected.
         """
     def is_match(self, s: builtins.str) -> builtins.bool: ...
     def scan_str(self, txt: builtins.str) -> builtins.bool: ...
     def scan(self, args: dict) -> builtins.bool: ...
     def scan_any(self, value: typing.Any) -> builtins.bool: ...
-
