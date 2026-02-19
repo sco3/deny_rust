@@ -8,12 +8,13 @@ Simple example plugin for searching and replacing text.
 This module loads configurations for plugins.
 """
 
-
+# First-Party
 from deny_filter import DenyListDaac
-from mcpgateway.plugins.framework import (
-    PluginConfig,
-)
+
+# Third-Party
+from mcpgateway.plugins.framework import PluginConfig
 from mcpgateway.services.logging_service import LoggingService
+
 from plugins.deny_filter.deny import DenyListConfig
 from plugins.deny_filter.deny_rust import DenyListPluginRust
 

@@ -22,9 +22,18 @@ module-name = "deny_filter"
 [tool.pytest.ini_options]
 pythonpath = ["."]
 
+[tool.pylint.MASTER]
+init-hook = "import sys; sys.path.insert(0, '.')"
+
+[tool.pylint.TYPECHECK]
+extension-pkg-allow-list = ["deny_filter","ahocorasick"]
+
 [tool.pyrefly]
 search-path = [".", "stubs"]
 site-package-path = [".venv/lib/python3.13/site-packages"]
+
+[tool.isort]
+profile = "black"
 
 [dependency-groups]
 dev = [
@@ -40,4 +49,6 @@ dev = [
   "pytest-benchmark>=5.2.3",
   "pyrefly>=0.52.0",
   "ruff>=0.15.1",
+  "pylint>=4.0.4",
+  "isort>=7.0.0",
 ]

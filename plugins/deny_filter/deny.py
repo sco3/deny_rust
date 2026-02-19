@@ -8,9 +8,6 @@ Simple example plugin for searching and replacing text.
 This module loads configurations for plugins.
 """
 
-# Third-Party
-from pydantic import BaseModel
-
 # First-Party
 from mcpgateway.plugins.framework import (
     Plugin,
@@ -21,6 +18,9 @@ from mcpgateway.plugins.framework import (
     PromptPrehookResult,
 )
 from mcpgateway.services.logging_service import LoggingService
+
+# Third-Party
+from pydantic import BaseModel
 
 # Initialize logging service first
 logging_service = LoggingService()
@@ -53,7 +53,7 @@ class DenyListPlugin(Plugin):
             self._deny_list.append(word)
 
     async def prompt_pre_fetch(
-        self, payload: PromptPrehookPayload, context: PluginContext
+        self, payload: PromptPrehookPayload, _context: PluginContext
     ) -> PromptPrehookResult:
         """The plugin hook run before a prompt is retrieved and rendered.
 

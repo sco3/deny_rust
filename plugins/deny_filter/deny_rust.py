@@ -10,17 +10,17 @@ Simple example plugin for searching and replacing text.
 # First-Party
 from typing import Any
 
+from deny_filter import DenyList
 from mcpgateway.plugins.framework import (
     PluginConfig,
     PluginContext,
-    PluginViolation,
     PromptPrehookPayload,
     PromptPrehookResult,
 )
 from mcpgateway.services.logging_service import LoggingService
 
-from deny_filter import DenyList
 from plugins.deny_filter.deny import DenyListConfig, DenyListPlugin
+from plugins.deny_filter.deny_violation import deny_violation
 
 # Initialize logging service first
 logging_service = LoggingService()
@@ -41,7 +41,7 @@ class DenyListPluginRust(DenyListPlugin):
         self._deny_list: Any = DenyList(self._dconfig.words)
 
     async def prompt_pre_fetch(
-        self, payload: PromptPrehookPayload, context: PluginContext
+        self, payload: PromptPrehookPayload, _context: PluginContext
     ) -> PromptPrehookResult:
         """The plugin hook run before a prompt is retrieved and rendered.
 
@@ -52,18 +52,7 @@ class DenyListPluginRust(DenyListPlugin):
         Returns:
             The result of the plugin's analysis, including whether the prompt can proceed.
         """
-        if payload.args:
-            if self._deny_list.scan_any(payload.args):
-                violation = PluginViolation(
-                    reason="Prompt not allowed",
-                    description="A deny word was found in the prompt",
-                    code="deny",
-                    details={},
-                )
-                logger.warning("Deny word detected in prompt")
-                return PromptPrehookResult(
-                    modified_payload=payload,
-                    violation=violation,
-                    continue_processing=False,
-                )
+        if payload.args and self._deny_list.scan_any(payload.args):
+            logger.warning("Deny word detected in prompt")
+            return deny_violation(payload)
         return PromptPrehookResult(modified_payload=payload)
