@@ -41,15 +41,17 @@ class DenyListAcPlugin(DenyListPlugin):
         super().__init__(config)
         self._automaton = self._build_automaton(self._dconfig.words)
 
-    def _build_automaton(self, words: list[str]) -> ahocorasick.Automaton:
+    def _build_automaton(self, words: list[str]) -> ahocorasick.Automaton | None:
         """Build the Aho-Corasick automaton for efficient pattern matching.
 
         Args:
             words: List of words to search for.
 
         Returns:
-            Configured Aho-Corasick automaton.
+            Configured Aho-Corasick automaton, or None if no words provided.
         """
+        if not words:
+            return None
         automaton = ahocorasick.Automaton(ahocorasick.STORE_ANY, ahocorasick.KEY_STRING)
         for word in words:
             # Add lowercase version for case-insensitive matching
@@ -66,7 +68,7 @@ class DenyListAcPlugin(DenyListPlugin):
         Returns:
             True if a deny word is found, False otherwise.
         """
-        if not text:
+        if not text or self._automaton is None:
             return False
         # Convert to lowercase for case-insensitive matching
         text_lower = text.lower()
