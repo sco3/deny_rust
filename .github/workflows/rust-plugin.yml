@@ -106,7 +106,7 @@ jobs:
       - name: Run pytest
         run: |
           set -o pipefail
-          uv run pytest -v -s | grep -E "CPU:|\|" | tee -a $GITHUB_STEP_SUMMARY
+          uv run pytest -v -s >> $GITHUB_STEP_SUMMARY
 
       - name: Ruff check
         run: uv run ruff check
