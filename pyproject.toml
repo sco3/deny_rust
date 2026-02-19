@@ -30,7 +30,7 @@ extension-pkg-allow-list = ["deny_filter","ahocorasick"]
 
 [tool.pyrefly]
 search-path = [".", "stubs"]
-site-package-path = [".venv/lib/python3.13/site-packages"]
+#site-package-path = [".venv/lib/python3.13/site-packages"]
 
 [tool.isort]
 profile = "black"
