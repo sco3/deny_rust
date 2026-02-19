@@ -88,8 +88,7 @@ class DenyListAcPlugin(DenyListPlugin):
             The result of the plugin's analysis, including whether the prompt can proceed.
         """
         if payload.args:
-            for key in payload.args:
-                value = payload.args[key]
+            for key, value in payload.args.items():
                 if isinstance(value, str) and self._contains_deny_word(value):
                     logger.warning("Deny word detected in prompt argument '%s'", key)
                     return deny_violation(payload)
