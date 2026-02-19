@@ -39,7 +39,6 @@ class DenyListAcPlugin(DenyListPlugin):
             config: Plugin configuration.
         """
         super().__init__(config)
-        self._dconfig = DenyListConfig.model_validate(self._config.config)
         self._automaton = self._build_automaton(self._dconfig.words)
 
     def _build_automaton(self, words: list[str]) -> ahocorasick.Automaton:
