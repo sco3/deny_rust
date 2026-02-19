@@ -102,7 +102,7 @@ coverage cov cv:
 	@echo "Generating code coverage report..."
 	@cargo install cargo-llvm-cov
 	@rustup component add llvm-tools-preview
-	@cargo llvm-cov --html --ignore-filename-regex "bin/.*"
+	@cargo llvm-cov --html --ignore-filename-regex "src/bin/.*"
 	@echo "Coverage report generated at target/llvm-cov/html/index.html"
 	@xdg-open target/llvm-cov/html/index.html
 
