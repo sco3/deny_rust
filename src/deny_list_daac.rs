@@ -1,8 +1,8 @@
 use crate::build_error::build_error;
 use crate::matcher::Matcher;
-use daachorse::MatchKind;
-use daachorse::charwise::CharwiseDoubleArrayAhoCorasick as Daac;
-use daachorse::charwise::CharwiseDoubleArrayAhoCorasickBuilder as DaacBuilder;
+use daachorse::DoubleArrayAhoCorasick as Daac;
+use daachorse::DoubleArrayAhoCorasickBuilder as DaacBld;
+use daachorse::MatchKind::LeftmostFirst;
 use pyo3::prelude::*;
 use pyo3::pyclass;
 use pyo3::types::PyDict;
@@ -18,7 +18,11 @@ impl Matcher for DenyListDaac {
     /// implements match with daachorse
     fn is_match(&self, s: &str) -> bool {
         // Convert input to lowercase for case-insensitive matching
-        self.daac.find_iter(&s.to_lowercase()).next().is_some()
+        //self.daac.find_iter(&s.to_lowercase()).next().is_some()
+        self.daac
+            .leftmost_find_iter(&s.to_lowercase())
+            .next()
+            .is_some()
     }
 }
 
@@ -33,9 +37,9 @@ impl DenyListDaac {
         // Store deny words in lowercase for case-insensitive matching
         let words_lower: Vec<String> = words.into_iter().map(|w| w.to_lowercase()).collect();
 
-        let daac = DaacBuilder::new()
-            .match_kind(MatchKind::Standard)
-            .build(words_lower)
+        let daac = DaacBld::new()
+            .match_kind(LeftmostFirst)
+            .build(&words_lower)
             .map_err(build_error)?;
 
         Ok(Self { daac })

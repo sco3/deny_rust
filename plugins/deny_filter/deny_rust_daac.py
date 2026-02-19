@@ -10,7 +10,7 @@ This module loads configurations for plugins.
 
 from typing import Any
 
-from deny_filter import DenyListRs
+from deny_filter import DenyListDaac
 from mcpgateway.plugins.framework import (
     PluginConfig,
 )

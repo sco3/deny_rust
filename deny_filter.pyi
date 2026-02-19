@@ -31,7 +31,7 @@ class DenyListDaac:
         r"""
         constructor
         # Errors
-        * aho-corasic errors (too long patterns)
+        * daachorse errors (e.g. too long patterns)
         """
     def is_match(self, s: builtins.str) -> builtins.bool: ...
     def scan_str(self, txt: builtins.str) -> builtins.bool: ...
