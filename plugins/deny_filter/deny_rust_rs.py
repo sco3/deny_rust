@@ -10,11 +10,13 @@ This module loads configurations for plugins.
 
 from typing import Any
 
+# First-Party
 from deny_filter import DenyListRs
-from mcpgateway.plugins.framework import (
-    PluginConfig,
-)
+
+# Third-Party
+from mcpgateway.plugins.framework import PluginConfig
 from mcpgateway.services.logging_service import LoggingService
+
 from plugins.deny_filter.deny import DenyListConfig
 from plugins.deny_filter.deny_rust import DenyListPluginRust
 
