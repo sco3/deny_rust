@@ -66,7 +66,7 @@ def load_config(config_path: str) -> Dict[str, Any]:
     """Load the deny check configuration from JSON file."""
     config_file = Path(config_path)
     if not config_file.exists():
-        config_file = Path(__file__).parent.parent / "data" / Path(config_path).name
+        config_file = Path(__file__).parent.parent / "tests" / "data" / Path(config_path).name
 
     with open(config_file, "r") as f:
         return json.load(f)
