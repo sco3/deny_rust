@@ -9,7 +9,7 @@ import json
 import logging
 import statistics
 from pathlib import Path
-from typing import List, Dict, Any, Type, Protocol, runtime_checkable
+from typing import List, Dict, Any, Type, Protocol, runtime_checkable, Optional
 
 from mcpgateway.plugins.framework import PluginConfig, PluginContext
 from mcpgateway.plugins.framework.hooks.prompts import (
@@ -255,10 +255,10 @@ def print_markdown_table(
 
 
 async def run_benchmark(
-    config_files: List[str] = None,
-    impls: List[Type[PromptPreFetchPlugin]] = None,
-    warmup_runs: int = None,
-    benchmark_runs: int = None,
+    config_files: Optional[List[str]] = None,
+    impls: Optional[List[Type[PromptPreFetchPlugin]]] = None,
+    warmup_runs: int = 0,
+    benchmark_runs: int = 0,
 ) -> Dict[str, Any]:
     """Run the full benchmark comparison.
 
@@ -275,9 +275,9 @@ async def run_benchmark(
         config_files = CONFIG_FILES
     if impls is None:
         impls = ALL_IMPLS
-    if warmup_runs is None:
+    if not warmup_runs:
         warmup_runs = WARMUP_RUNS
-    if benchmark_runs is None:
+    if not benchmark_runs:
         benchmark_runs = BENCHMARK_RUNS
 
     impl_names = [impl.__name__ for impl in impls]
