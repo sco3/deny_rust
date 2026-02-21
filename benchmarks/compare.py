@@ -178,13 +178,10 @@ async def benchmark_plugin(
 def get_cpu_info() -> str:
     """Get CPU model information."""
     try:
-        with open("/proc/cpuinfo", "r") as f:
-            for line in f:
-                if line.startswith("model name"):
-                    return line.split(":", 1)[1].strip()
-    except (FileNotFoundError, IOError):
-        pass
-    return "CPU info unavailable"
+        import cpuinfo
+        return cpuinfo.get_cpu_info().get('brand_raw', "CPU info unavailable")
+    except Exception:
+        return "CPU info unavailable"
 
 
 def print_markdown_table(
