@@ -148,8 +148,7 @@ async def benchmark_plugin(
 
             timings_us.sort()
             median = statistics.median(timings_us)
-            p99_index = int(len(timings_us) * 0.99)
-            p99 = timings_us[p99_index]
+            p99 = statistics.quantiles(timings_us, n=100)[-1]
             mean = statistics.mean(timings_us)
             min_time = min(timings_us)
             total_time_combination = sum(timings_us)
