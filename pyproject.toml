@@ -45,7 +45,6 @@ dev = [
   "line-profiler>=5.0.1",
   "py-spy>=0.4.1",
   "pyperf>=2.10.0",
-  "uv>=0.10.2",
   "pytest-benchmark>=5.2.3",
   "pyrefly>=0.52.0",
   "ruff>=0.15.1",
